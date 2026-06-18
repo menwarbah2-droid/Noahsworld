@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahrain Business Tools Hub</title>
+    <!-- QR Code Library for BenefitPay -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; }
+        header { background: linear-gradient(135deg, #d90429, #ef233c); color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-size: 28px; }
+        header p { font-size: 15px; opacity: 0.9; margin-top: 5px; }
+        
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .card { background: white; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer; border: 1px solid #e1e8ed; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); border-color: #ef233c; }
+        .icon { font-size: 50px; margin-bottom: 15px; }
+        .card h3 { font-size: 20px; margin-bottom: 10px; color: #2b2d42; }
+        .card p { font-size: 14px; color: #6c757d; margin-bottom: 20px; line-height: 1.5; }
+        .btn { display: inline-block; background-color: #2b2d42; color: white; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; transition: background 0.2s; }
+        .card:hover .btn { background-color: #ef233c; }
+
+        /* Full Screen App View */
+        .app-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; z-index: 9999; overflow-y: auto; padding: 30px 20px; }
+        .back-btn { background: #2b2d42; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .back-btn:hover { background: #d90429; }
+        .app-content { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        /* App Specific Styling */
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+        .action-btn { background-color: #ef233c; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .action-btn:hover { background-color: #d90429; }
+        .result-box { margin-top: 20px; padding: 15px; background: #f1f3f5; border-radius: 4px; border-left: 4px solid #ef233c; text-align: left; }
+        .preview-box { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px; }
+        canvas { max-width: 100%; height: auto; border: 1px solid #ddd; background: #fff; }
+        #qrcode { margin: 20px auto; display: flex; justify-content: center; }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard-view">
+        <header>
+            <h1>Bahrain Smart Tools Hub</h1>
+            <p>100% Offline & Secure Operations Dashboard</p>
+        </header>
+
+        <div class="container">
+            <div class="grid">
+                <!-- Card 1: VAT Tool -->
+                <div class="card" onclick="openApp('vat-app')">
+                    <div class="icon">📊</div>
+                    <h3>VAT File Processing</h3>
+                    <p>Calculate 10% Standard Bahrain VAT, Net Amount, and Gross Amount instantly.</p>
+                    <span class="btn">Open Tool</span>
+                </div>
+
+                <!-- Card 2: BenefitPay QR Tool -->
+                <div class="card" onclick="openApp('benefit-app')">
+                    <div class="icon">🇧🇭</div>
+                    <h3>BenefitPay QR Generator</h3>
+                    <p>Generate accurate QR codes for local Bahrain BenefitPay business transfers.</p>
+                    <span class="btn">Open Tool</span>
+                </div>
+
+                <!-- Card 3: CPR Joiner -->
+                <div class="card" onclick="openApp('cpr-app')">
+                    <div class="icon">🆔</div>
+                    <h3>CPR Card Joiner</h3>
+                    <p>Merge front and back scans of Bahrain CPR ID cards into a single clean image.</p>
+                    <span class="btn">Open Tool</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. VAT APP SCREEN -->
+    <div id="vat-app" class="app-container">
+        <button class="back-btn" onclick="closeApp('vat-app')">← Back to Dashboard</button>
+        <div class="app-content">
+            <h2>📊 Bahrain VAT Processing Tool</h2>
+            <p style="color: #666; margin-bottom: 20px;">Standard Bahrain VAT Rate is 10%</p>
+            
+            <div class="form-group">
+                <label>Calculation Type</label>
+                <select id="vat-type">
+                    <option value="exclude">Add VAT (Amount is Exclusive of VAT)</option>
+                    <option value="include">Extract VAT (Amount is Inclusive of VAT)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount (BHD)</label>
+                <input type="number" id="vat-amount" placeholder="Enter amount in BHD" step="0.001">
+            </div>
+            <button class="action-btn" onclick="calculateVAT()">Calculate VAT</button>
+
+            <div id="vat-result" class="result-box" style="display: none;">
+                <p><strong>Net Amount:</strong> <span id="res-net">0.000</span> BHD</p>
+                <p><strong>VAT Amount (10%):</strong> <span id="res-vat">0.000</span> BHD</p>
+                <p style="font-size: 18px; margin-top: 5px; color: #d90429;"><strong>Gross Total:</strong> <span id="res-gross">0.000</span> BHD</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BENEFITPAY QR SCREEN -->
+    <div id="benefit-app" class="app-container">
+        <button class="back-btn" onclick="closeApp('benefit-app')">← Back to Dashboard</button>
+        <div class="app-content" style="text-align: center;">
+            <h2 style="text-align: left;">🇧🇭 BenefitPay QR Code Generator</h2>
+            <p style="color: #666; margin-bottom: 20px; text-align: left;">Generate custom QR codes for merchants or peer-to-peer billing.</p>
+            
+            <div class="form-group">
+                <label>IBAN or Account/Mobile Number</label>
+                <input type="text" id="benefit-id" placeholder="e.g., BHxxxxxxxxxxxxxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>Amount (Optional - BHD)</label>
+                <input type="number" id="benefit-amount" placeholder="e.g., 5.500" step="0.001">
+            </div>
+            <button class="action-btn" onclick="generateBenefitQR()">Generate QR Code</button>
+
+            <div id="qrcode"></div>
+        </div>
+    </div>
+
+    <!-- 3. CPR CARD JOINER SCREEN -->
+    <div id="cpr-app" class="app-container">
+        <button class="back-btn" onclick="closeApp('cpr-app')">← Back to Dashboard</button>
+        <div class="app-content">
+            <h2>🆔 Bahrain CPR Card Front & Back Joiner</h2>
+            <p style="color: #666; margin-bottom: 20px;">Upload both sides to combine them vertically into a single file.</p>
+            
+            <div class="form-group">
+                <label>Upload CPR Front Side</label>
+                <input type="file" id="cpr-front" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Upload CPR Back Side</label>
+                <input type="file" id="cpr-back" accept="image/*">
+            </div>
+            <button class="action-btn" onclick="joinCPRImages()">Merge & Process Images</button>
+
+            <div class="preview-box">
+                <canvas id="cpr-canvas" style="display:none;"></canvas>
+                <a id="download-link" class="btn" style="display:none; background-color: #2b2d42; width: 100%; text-align: center;">Download Merged CPR</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- UTILITY JAVASCRIPT -->
+    <script>
+        // Screen Navigation
+        function openApp(appId) {
+            document.getElementById(appId).style.display = 'block';
+            document.getElementById('dashboard-view').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+        function closeApp(appId) {
+            document.getElementById(appId).style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+        }
+
+        // 1. VAT Logic
+        function calculateVAT() {
+            let type = document.getElementById('vat-type').value;
+            let amt = parseFloat(document.getElementById('vat-amount').value);
+            if (isNaN(amt) || amt <= 0) return alert("Please enter a valid amount");
+
+            let net, vat, gross;
+            if (type === "exclude") {
+                net = amt;
+                vat = amt * 0.10;
+                gross = net + vat;
+            } else {
+                gross = amt;
+                net = gross / 1.10;
+                vat = gross - net;
+            }
+
+            document.getElementById('res-net').innerText = net.toFixed(3);
+            document.getElementById('res-vat').innerText = vat.toFixed(3);
+            document.getElementById('res-gross').innerText = gross.toFixed(3);
+            document.getElementById('vat-result').style.display = 'block';
+        }
+
+        // 2. BenefitPay QR Logic
+        let qrContainer = document.getElementById("qrcode");
+        let qrcode = new QRCode(qrContainer, { width: 250, height: 250 });
+
+        function generateBenefitQR() {
+            let id = document.getElementById('benefit-id').value.trim();
+            let amount = document.getElementById('benefit-amount').value.trim();
+            if (!id) return alert("Please enter an Account/Mobile number or IBAN");
+
+            let qrData = `https://www.benefit.bh/pay?id=${encodeURIComponent(id)}`;
+            if(amount) { qrData += `&amt=${encodeURIComponent(amount)}`; }
+
+            qrContainer.innerHTML = ""; 
+            qrcode = new QRCode(qrContainer, { text: qrData, width: 250, height: 250 });
+        }
+
+        // 3. CPR Joiner Logic
+        function joinCPRImages() {
+            let frontFile = document.getElementById('cpr-front').files[0];
+            let backFile = document.getElementById('cpr-back').files[0];
+            if (!frontFile || !backFile) return alert("Please upload both front and back images.");
+
+            let imgFront = new Image();
+            let imgBack = new Image();
+            let loadedCount = 0;
+
+            function onImageLoad() {
+                loadedCount++;
+                if (loadedCount === 2) {
+                    let canvas = document.getElementById('cpr-canvas');
+                    let ctx = canvas.getContext('2d');
+
+                    let targetWidth = imgFront.width;
+                    let scaleFactor = targetWidth / imgBack.width;
+                    let scaledBackHeight = imgBack.height * scaleFactor;
+
+                    canvas.width = targetWidth;
+                    canvas.height = imgFront.height + scaledBackHeight + 20;
+
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.drawImage(imgFront, 0, 0, targetWidth, imgFront.height);
+                    ctx.drawImage(imgBack, 0, imgFront.height + 20, targetWidth, scaledBackHeight);
+
+                    canvas.style.display = 'block';
+                    let downloadLink = document.getElementById('download-link');
+                    downloadLink.href = canvas.toDataURL("image/jpeg", 0.9);
+                    downloadLink.download = "Bahrain_CPR_Merged.jpg";
+                    downloadLink.style.display = 'block';
+                }
+            }
+
+            imgFront.onload = onImageLoad;
+            imgBack.onload = onImageLoad;
+
+            imgFront.src = URL.createObjectURL(frontFile);
+            imgBack.src = URL.createObjectURL(backFile);
+        }
+    </script>
+</body>
+              </html>
