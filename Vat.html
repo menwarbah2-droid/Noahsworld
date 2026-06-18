@@ -1,158 +1,2016 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bahrain Smart Tools Hub</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; padding: 15px; }
-        .container { max-width: 600px; margin: 0 auto; padding-top: 20px; }
-        
-        /* 🌟 MODERN CLEAN HEADER */
-        .modern-header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            padding: 10px;
-        }
-        .modern-header h1 { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: #0f172a; 
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-        }
-        .modern-header p { 
-            font-size: 14px; 
-            color: #64748b; 
-            line-height: 1.5;
-        }
-        
-        /* 📱 2-COLUMN GRID LAYOUT (যেমনটা স্ক্রিনশটে আছে) */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            margin-bottom: 30px;
-        }
-        
-        /* CARD STYLING */
-        .card { 
-            background: #ffffff; 
-            padding: 30px 15px; 
-            border-radius: 20px; 
-            text-align: center; 
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03); 
-            border: 1px solid #e2e8f0; 
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        }
-        
-        /* টাচ করলে বা ক্লিক করলে হালকা অ্যানিমেশন */
-        .card:active { 
-            transform: scale(0.97); 
-            background-color: #f8fafc;
-        }
-        .card:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.05);
-        }
-        
-        /* BLUE ICON STYLING (স্ক্রিনশটের মতো নীল রঙের আইকন) */
-        .card .icon-wrapper {
-            font-size: 32px;
-            color: #2563eb;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .card h3 { 
-            font-size: 16px; 
-            font-weight: 700; 
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-        
-        .card p { 
-            font-size: 12px; 
-            color: #64748b;
-            line-height: 1.4;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VATFlow — by Noah</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --ink: #0f1117;
+    --ink-2: #3a3d4a;
+    --ink-3: #7a7f90;
+    --bg: #f5f4ef;
+    --bg-2: #eceae3;
+    --bg-card: #ffffff;
+    --accent: #1a3a5c;
+    --accent-2: #2e6da4;
+    --accent-light: #ddeaf5;
+    --green: #1a4a2e;
+    --green-light: #d6edd9;
+    --amber: #5c3a00;
+    --amber-light: #fef0d0;
+    --red: #5c1a1a;
+    --red-light: #fce8e8;
+    --border: #dddbd3;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  }
 
-        /* SVG Icons for Premium Look */
-        .icon-svg {
-            width: 36px;
-            height: 36px;
-            fill: none;
-            stroke: #2563eb;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-    </style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--ink);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    color: #fff;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .nav-logo span { color: #6baed6; font-style: italic; }
+
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 100%;
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.72);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 6px 11px;
+    height: auto;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .nav-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .nav-btn.active-page { color: #fff; background: rgba(255,255,255,0.12); }
+
+  /* Hamburger hidden on desktop */
+  .hamburger { display: none; }
+
+  /* PAGES */
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 2rem 4rem;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 em { color: var(--accent-2); font-style: italic; }
+  .hero p {
+    font-size: 1.05rem;
+    color: var(--ink-3);
+    max-width: 480px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .hero-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    text-align: left;
+  }
+  .hero-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--accent-2); }
+  .hero-card .card-icon { font-size: 1.5rem; margin-bottom: 10px; }
+  .hero-card .card-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .hero-card .card-desc { font-size: 12px; color: var(--ink-3); }
+
+  /* SECTION HEADER */
+  .section-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.75rem;
+  }
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+  .breadcrumb span { cursor: pointer; }
+  .breadcrumb span:hover { color: var(--accent-2); }
+  .breadcrumb .sep { opacity: 0.4; }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .section-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+
+  /* JN CONTENT */
+  .jn-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  .jn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 16px;
+  }
+
+  .upload-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s;
+  }
+  .upload-card:hover { box-shadow: var(--shadow-lg); }
+
+  .upload-card-header {
+    padding: 1rem 1.25rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-purchase { background: var(--accent-light); color: var(--accent); }
+  .badge-sales { background: var(--green-light); color: var(--green); }
+  .badge-zero { background: var(--amber-light); color: var(--amber); }
+
+  .card-title-row { flex: 1; }
+  .card-title-row h3 { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .card-title-row p { font-size: 12px; color: var(--ink-3); }
+
+  .upload-zone {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    margin: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    min-height: 110px;
+    text-align: center;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent-2); background: var(--accent-light); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 1.5rem; opacity: 0.4; }
+  .upload-label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+  .upload-sub { font-size: 11px; color: var(--ink-3); }
+
+  .file-info {
+    display: none;
+    margin: 0 1rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    gap: 10px;
+    align-items: center;
+  }
+  .file-info.show { display: flex; }
+  .file-name { font-size: 13px; font-weight: 500; flex: 1; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-rows { font-size: 11px; color: var(--ink-3); font-family: 'DM Mono', monospace; white-space: nowrap; }
+
+  .card-footer {
+    padding: 0 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .card-footer-row {
+    display: flex;
+    gap: 7px;
+  }
+  .btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-primary:disabled { opacity: 0.35; cursor: default; }
+  .btn-return {
+    background: var(--red-light);
+    color: var(--red);
+    border-color: #e8c8c8;
+  }
+  .btn-return:hover { background: #f5d5d5; }
+  .btn-return:disabled { opacity: 0.35; cursor: default; }
+  .btn-ghost { background: transparent; color: var(--ink-2); flex: 0 0 auto; padding: 8px 14px; }
+  .btn-ghost:hover { background: var(--bg); }
+
+  /* STATUS STRIP */
+  .status-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .status-dot.ready { background: #4CAF50; }
+  .status-dot.error { background: #e53935; }
+
+  /* PREVIEW TABLE */
+  .preview-wrap {
+    display: none;
+    margin: 0 1rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .preview-wrap.show { display: block; }
+  .preview-header {
+    padding: 7px 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    justify-content: space-between;
+  }
+  .preview-table-scroll { overflow-x: auto; max-height: 160px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: var(--bg-2); font-weight: 500; color: var(--ink-3); padding: 5px 8px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
+  td { padding: 5px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--ink-2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  .num-td { text-align: right; font-family: 'DM Mono', monospace; }
+
+  /* ── LOGIN SCREEN ───────────────────────────────────── */
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  #login-screen.hidden { display: none; }
+
+  .login-box {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+    text-align: center;
+  }
+  .login-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .login-logo span { color: var(--accent-2); font-style: italic; }
+  .login-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 2rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .login-field {
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+  .login-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+  .login-field input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .login-field input:focus { border-color: var(--accent-2); background: #fff; }
+  .login-field input.error { border-color: #e53935; background: var(--red-light); }
+
+  /* PIN dots */
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0.5rem 0 1.25rem;
+  }
+  .pin-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+
+  .pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .pin-key {
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    font-family: 'DM Mono', monospace;
+    user-select: none;
+  }
+  .pin-key:hover { background: var(--accent-light); border-color: var(--accent-2); }
+  .pin-key:active { transform: scale(0.95); }
+  .pin-key.del { font-size: 14px; color: var(--ink-3); }
+  .pin-key.wide { grid-column: span 3; background: var(--ink); color: #fff; border-color: var(--ink); font-size: 14px; letter-spacing: 0.05em; }
+  .pin-key.wide:hover { background: var(--accent); border-color: var(--accent); }
+
+  .login-error {
+    font-size: 12px;
+    color: #e53935;
+    margin-bottom: 0.75rem;
+    min-height: 18px;
+    font-weight: 500;
+  }
+
+  .login-step { display: none; }
+  .login-step.active { display: block; }
+
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.25rem;
+  }
+  .login-btn:hover { background: var(--accent); }
+
+  .login-divider {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin: 1rem 0 0.75rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .login-shake {
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  #app { min-height: 100vh; display: flex; flex-direction: column; }
+  #app > footer { margin-top: auto; }
+
+  @media (max-width: 640px) {
+
+    /* NAV — hamburger style */
+    nav { padding: 0 1rem; }
+    .nav-menu {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      top: 56px; left: 0; right: 0; bottom: 0;
+      background: var(--ink);
+      z-index: 99;
+      padding: 0.5rem 0.75rem;
+      overflow-y: auto;
+      height: calc(100vh - 56px);
+      gap: 4px;
+      align-items: stretch;
+    }
+    .nav-menu.mobile-open { display: flex; }
+    .nav-btn {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 15px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      justify-content: flex-start;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.12); }
+
+    /* Hamburger button */
+    .hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.2s; }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* HERO */
+    .hero { padding: 2.5rem 1.25rem 2rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 0.95rem; }
+    .hero-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hero-card { padding: 1rem 0.85rem; }
+
+    /* SECTION HEADER */
+    .section-header { padding: 1.25rem 1.25rem 1rem; }
+    .section-title { font-size: 1.4rem; }
+
+    /* JN GRID — single column */
+    .jn-content { padding: 1rem 1rem 3rem; }
+    .jn-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    /* CARD FOOTER — stack buttons */
+    .card-footer { padding: 0 0.85rem 0.85rem; gap: 8px; }
+    .btn { font-size: 13px; padding: 11px 10px; }
+
+    /* UPLOAD ZONE */
+    .upload-zone { min-height: 90px; margin: 0.85rem; padding: 1.25rem 1rem; }
+
+    /* TRIM */
+    .trim-content { padding: 1rem 1rem 3rem; }
+    .trim-layout { grid-template-columns: 1fr; gap: 12px; }
+    .form-row-2 { grid-template-columns: 1fr; }
+    .trim-card-body { padding: 1rem; }
+
+    /* BREADCRUMB */
+    .breadcrumb { flex-wrap: wrap; gap: 4px; font-size: 11px; }
+
+    /* PREVIEW TABLE scroll hint */
+    .preview-table-scroll { -webkit-overflow-scrolling: touch; }
+
+    /* FILE INFO */
+    .file-info { flex-wrap: wrap; }
+    .file-rows { width: 100%; }
+
+    /* STATS */
+    .trim-stats { grid-template-columns: 1fr 1fr; }
+
+    /* FOOTER */
+    footer { font-size: 11px; padding: 1rem; }
+  }
+
+  /* Hamburger hidden on desktop */
+  .hamburger { display: none; }
+
+  .trim-content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+  .trim-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 700px) { .trim-layout { grid-template-columns: 1fr; } }
+
+  .trim-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .trim-card-title {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .trim-card-body { padding: 1.25rem; }
+
+  .stat-big {
+    font-family: 'DM Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--ink-3); }
+
+  .trim-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .trim-stat-box {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .trim-stat-box .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .trim-stat-box .lbl { font-size: 11px; color: var(--ink-3); }
+  .trim-stat-box.highlight .val { color: var(--accent-2); }
+  .trim-stat-box.warn .val { color: #c0392b; }
+
+  .form-row { margin-bottom: 1rem; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--bg-card);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent-2); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+
+  .btn-process {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+  }
+  .btn-process:hover { background: var(--accent-2); }
+  .btn-process:disabled { opacity: 0.35; cursor: default; }
+
+  .result-panel {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--green-light);
+    border: 1px solid #a8d5b0;
+    border-radius: var(--radius-sm);
+  }
+  .result-panel.show { display: block; }
+  .result-panel.error { background: var(--red-light); border-color: #e8c8c8; }
+  .result-title { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
+  .result-panel.error .result-title { color: var(--red); }
+  .result-row { font-size: 12px; color: var(--ink-2); margin-bottom: 3px; font-family: 'DM Mono', monospace; }
+
+  .btn-dl-result {
+    margin-top: 10px;
+    width: 100%;
+    padding: 9px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn-dl-result:hover { opacity: 0.85; }
+
+  /* TYPE TOGGLE */
+  .type-toggle {
+    display: inline-flex;
+    background: var(--bg-2);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .toggle-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 7px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ink-3);
+    transition: all 0.15s;
+  }
+  .toggle-btn.active {
+    background: var(--bg-card);
+    color: var(--ink);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .trim-type-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  /* PROTECTED DATES */
+  .protected-dates-wrap {
+    margin-bottom: 1rem;
+  }
+  .protected-dates-label {
+    font-size: 12px; font-weight: 500; color: var(--ink-2);
+    margin-bottom: 5px; display: block;
+  }
+  .protected-dates-tags {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    min-height: 32px;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    margin-bottom: 6px;
+  }
+  .date-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-light); color: var(--accent);
+    border-radius: 20px; padding: 2px 8px;
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+  .date-tag button {
+    background: none; border: none; color: var(--accent);
+    cursor: pointer; font-size: 12px; line-height: 1;
+    padding: 0; opacity: 0.6;
+  }
+  .date-tag button:hover { opacity: 1; }
+  .protected-add-row { display: flex; gap: 6px; }
+  .protected-add-row .form-input { flex: 1; }
+  .btn-add-date {
+    padding: 8px 12px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; cursor: pointer; color: var(--ink-2);
+    transition: background 0.12s;
+    white-space: nowrap;
+  }
+  .btn-add-date:hover { background: var(--accent-light); color: var(--accent); }
+  .date-picker-wrap { margin-bottom: 6px; }
+  .date-picker-select {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--ink); background: var(--bg-card);
+    max-height: 120px;
+  }
+
+  /* MENWAR */
+  .menwar-content {
+    max-width: 600px;
+    margin: 4rem auto;
+    text-align: center;
+    padding: 2rem;
+  }
+  .coming-soon-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    box-shadow: var(--shadow);
+  }
+  .coming-soon-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .coming-soon-box h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .coming-soon-box p { font-size: 14px; color: var(--ink-3); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: 'DM Mono', monospace;
+  }
+  footer strong { color: var(--ink-2); }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <!-- HEADER SECTION -->
-        <header class="modern-header">
-            <h1>Bahrain Tools Hub</h1>
-            <p>High-efficiency retail utility applications.</p>
-        </header>
+<!-- NAV -->
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box" id="login-box">
+    <div class="login-logo">VAT<span>Flow</span></div>
+    <div class="login-sub">Secure Access · by Noah</div>
 
-        <!-- 2-COLUMN TOOLS GRID -->
-        <div class="grid">
-            
-            <!-- ১. VAT Processing Card -->
-            <a href="Vat.html" class="card">
-                <div class="icon-wrapper">
-                    <!-- 📊 Chart Icon -->
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                </div>
-                <h3>VAT Tool</h3>
-                <p>10% VAT Calculator</p>
-            </a>
-
-            <!-- ২. BenefitPay QR Card -->
-            <a href="Qr.html" class="card">
-                <div class="icon-wrapper">
-                    <!-- 📦 Box Icon -->
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                </div>
-                <h3>Benefit QR</h3>
-                <p>Generate Pay Codes</p>
-            </a>
-
-            <!-- ৩. CPR Card Joiner Card -->
-            <a href="Cpr.html" class="card">
-                <div class="icon-wrapper">
-                    <!-- 🆔 ID Card Icon -->
-                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="11" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="9" y2="16"></line></svg>
-                </div>
-                <h3>CPR Joiner</h3>
-                <p>Merge Both Sides</p>
-            </a>
-
-            <!-- ৪. System Status / Info Card (গ্রিড মেলাতে বোনাস কার্ড) -->
-            <div class="card" style="cursor: default;">
-                <div class="icon-wrapper">
-                    <!-- ⚡ Status Icon -->
-                    <svg class="icon-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                </div>
-                <h3>Status</h3>
-                <p>100% Secure & Live</p>
-            </div>
-
-        </div>
+    <!-- Step 1: Username -->
+    <div class="login-step active" id="step-username">
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkUsername()">
+      </div>
+      <div class="login-error" id="err-username"></div>
+      <button class="login-btn" onclick="checkUsername()">Continue →</button>
     </div>
 
+    <!-- Step 2: PIN -->
+    <div class="login-step" id="step-pin">
+      <div class="login-divider">Enter your PIN</div>
+      <div class="pin-dots" id="pin-dots">
+        <div class="pin-dot" id="dot0"></div>
+        <div class="pin-dot" id="dot1"></div>
+        <div class="pin-dot" id="dot2"></div>
+      </div>
+      <div class="login-error" id="err-pin"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinPress('1')">1</button>
+        <button class="pin-key" onclick="pinPress('2')">2</button>
+        <button class="pin-key" onclick="pinPress('3')">3</button>
+        <button class="pin-key" onclick="pinPress('4')">4</button>
+        <button class="pin-key" onclick="pinPress('5')">5</button>
+        <button class="pin-key" onclick="pinPress('6')">6</button>
+        <button class="pin-key" onclick="pinPress('7')">7</button>
+        <button class="pin-key" onclick="pinPress('8')">8</button>
+        <button class="pin-key" onclick="pinPress('9')">9</button>
+        <button class="pin-key del" onclick="pinDel()">⌫</button>
+        <button class="pin-key" onclick="pinPress('0')">0</button>
+        <button class="pin-key del" onclick="pinClear()">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="app" style="display:none;">
+
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">VAT<span>Flow</span></div>
+  <div class="nav-menu" id="nav-menu">
+    <button class="nav-btn" onclick="showPage('home'); closeMobileMenu()">🏠 Home</button>
+    <button class="nav-btn" onclick="showPage('jn'); closeMobileMenu()">📊 JN Processing</button>
+    <button class="nav-btn" onclick="showPage('menwar'); closeMobileMenu()">📋 Menwar</button>
+    <button class="nav-btn" onclick="showPage('trimmer'); closeMobileMenu()">✂️ VAT Trimmer</button>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <p class="hero-eyebrow">VAT Processing Tool · by Noah</p>
+    <h1>Prepare your<br><em>VAT files</em><br>with ease</h1>
+    <p>Select a module below to get started.</p>
+    <div class="hero-cards">
+      <div class="hero-card" onclick="showPage('jn')">
+        <div class="card-icon">📊</div>
+        <div class="card-title">JN Processing</div>
+        <div class="card-desc">STD &amp; Zero Rated Purchase and Sales</div>
+      </div>
+      <div class="hero-card" onclick="showPage('menwar')">
+        <div class="card-icon">📋</div>
+        <div class="card-title">Menwar</div>
+        <div class="card-desc">Coming soon</div>
+      </div>
+      <div class="hero-card" onclick="showPage('trimmer')">
+        <div class="card-icon">✂️</div>
+        <div class="card-title">VAT Trimmer</div>
+        <div class="card-desc">Trim STD &amp; Zero rated sales to target value</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JN PAGE -->
+<div class="page" id="page-jn">
+  <div class="section-header">
+    <div class="breadcrumb">
+      <span onclick="showPage('home')">Home</span>
+      <span class="sep">/</span>
+      <span>Prepare VAT File</span>
+      <span class="sep">/</span>
+      <span style="color:var(--ink-2); font-weight:500;">JN</span>
+    </div>
+    <div class="section-title">JN Processing</div>
+    <div class="section-sub">Upload your 4 Excel files to process and download clean VAT-ready sheets</div>
+  </div>
+
+  <div class="jn-content">
+    <div class="jn-grid">
+
+      <!-- STD PURCHASE -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <span class="type-badge badge-purchase">Purchase</span>
+          <div class="card-title-row">
+            <h3>STD Purchase</h3>
+            <p>Standard rated purchase entries</p>
+          </div>
+        </div>
+        <div class="upload-zone" id="zone-stdpurchase" onclick="document.getElementById('file-stdpurchase').click()">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-label">Click to upload Excel</div>
+          <div class="upload-sub">.xlsx or .xls</div>
+          <input type="file" id="file-stdpurchase" accept=".xlsx,.xls" onchange="handleFile(this, 'stdpurchase')">
+        </div>
+        <div class="file-info" id="info-stdpurchase">
+          <span class="file-name" id="fname-stdpurchase">—</span>
+          <span class="file-rows" id="frows-stdpurchase"></span>
+        </div>
+        <div class="preview-wrap" id="preview-stdpurchase">
+          <div class="preview-header">
+            <span>Preview</span>
+            <span id="preview-count-stdpurchase"></span>
+          </div>
+          <div class="preview-table-scroll" id="preview-table-stdpurchase"></div>
+        </div>
+        <div class="status-strip">
+          <div class="status-dot" id="dot-stdpurchase"></div>
+          <span id="status-stdpurchase">No file loaded</span>
+        </div>
+        <div class="card-footer" id="footer-stdpurchase">
+          <button class="btn btn-primary" id="dl-stdpurchase-main" onclick="downloadSplit('stdpurchase','main')" disabled>↓ STD Rated Purchase</button>
+          <button class="btn btn-return" id="dl-stdpurchase-return" onclick="downloadSplit('stdpurchase','return')" disabled>↓ STD Rated Purchase Return</button>
+          <button class="btn btn-ghost" onclick="clearFile('stdpurchase')">Clear</button>
+        </div>
+      </div>
+
+      <!-- ZERO RATED PURCHASE -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <span class="type-badge badge-zero">Purchase</span>
+          <div class="card-title-row">
+            <h3>Zero Rated Purchase</h3>
+            <p>Zero rated purchase entries</p>
+          </div>
+        </div>
+        <div class="upload-zone" id="zone-zeropurchase" onclick="document.getElementById('file-zeropurchase').click()">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-label">Click to upload Excel</div>
+          <div class="upload-sub">.xlsx or .xls</div>
+          <input type="file" id="file-zeropurchase" accept=".xlsx,.xls" onchange="handleFile(this, 'zeropurchase')">
+        </div>
+        <div class="file-info" id="info-zeropurchase">
+          <span class="file-name" id="fname-zeropurchase">—</span>
+          <span class="file-rows" id="frows-zeropurchase"></span>
+        </div>
+        <div class="preview-wrap" id="preview-zeropurchase">
+          <div class="preview-header">
+            <span>Preview</span>
+            <span id="preview-count-zeropurchase"></span>
+          </div>
+          <div class="preview-table-scroll" id="preview-table-zeropurchase"></div>
+        </div>
+        <div class="status-strip">
+          <div class="status-dot" id="dot-zeropurchase"></div>
+          <span id="status-zeropurchase">No file loaded</span>
+        </div>
+        <div class="card-footer" id="footer-zeropurchase">
+          <button class="btn btn-primary" id="dl-zeropurchase-main" onclick="downloadSplit('zeropurchase','main')" disabled>↓ Zero Rated Purchase</button>
+          <button class="btn btn-return" id="dl-zeropurchase-return" onclick="downloadSplit('zeropurchase','return')" disabled>↓ Zero Rated Purchase Return</button>
+          <button class="btn btn-ghost" onclick="clearFile('zeropurchase')">Clear</button>
+        </div>
+      </div>
+
+      <!-- STD SALES -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <span class="type-badge badge-sales">Sales</span>
+          <div class="card-title-row">
+            <h3>STD Sales</h3>
+            <p>Standard rated sales entries</p>
+          </div>
+        </div>
+        <div class="upload-zone" id="zone-stdsales" onclick="document.getElementById('file-stdsales').click()">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-label">Click to upload Excel</div>
+          <div class="upload-sub">.xlsx or .xls</div>
+          <input type="file" id="file-stdsales" accept=".xlsx,.xls" onchange="handleFile(this, 'stdsales')">
+        </div>
+        <div class="file-info" id="info-stdsales">
+          <span class="file-name" id="fname-stdsales">—</span>
+          <span class="file-rows" id="frows-stdsales"></span>
+        </div>
+        <div class="preview-wrap" id="preview-stdsales">
+          <div class="preview-header">
+            <span>Preview</span>
+            <span id="preview-count-stdsales"></span>
+          </div>
+          <div class="preview-table-scroll" id="preview-table-stdsales"></div>
+        </div>
+        <div class="status-strip">
+          <div class="status-dot" id="dot-stdsales"></div>
+          <span id="status-stdsales">No file loaded</span>
+        </div>
+        <div class="card-footer" id="footer-stdsales">
+          <button class="btn btn-primary" id="dl-stdsales-main" onclick="downloadSplit('stdsales','main')" disabled>↓ STD Rated Sales</button>
+          <button class="btn btn-return" id="dl-stdsales-return" onclick="downloadSplit('stdsales','return')" disabled>↓ STD Rated Sales Return</button>
+          <button class="btn btn-ghost" onclick="clearFile('stdsales')">Clear</button>
+        </div>
+      </div>
+
+      <!-- ZERO RATED SALES -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <span class="type-badge badge-zero">Sales</span>
+          <div class="card-title-row">
+            <h3>Zero Rated Sales</h3>
+            <p>Zero rated sales entries</p>
+          </div>
+        </div>
+        <div class="upload-zone" id="zone-zerosales" onclick="document.getElementById('file-zerosales').click()">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-label">Click to upload Excel</div>
+          <div class="upload-sub">.xlsx or .xls</div>
+          <input type="file" id="file-zerosales" accept=".xlsx,.xls" onchange="handleFile(this, 'zerosales')">
+        </div>
+        <div class="file-info" id="info-zerosales">
+          <span class="file-name" id="fname-zerosales">—</span>
+          <span class="file-rows" id="frows-zerosales"></span>
+        </div>
+        <div class="preview-wrap" id="preview-zerosales">
+          <div class="preview-header">
+            <span>Preview</span>
+            <span id="preview-count-zerosales"></span>
+          </div>
+          <div class="preview-table-scroll" id="preview-table-zerosales"></div>
+        </div>
+        <div class="status-strip">
+          <div class="status-dot" id="dot-zerosales"></div>
+          <span id="status-zerosales">No file loaded</span>
+        </div>
+        <div class="card-footer" id="footer-zerosales">
+          <button class="btn btn-primary" id="dl-zerosales-main" onclick="downloadSplit('zerosales','main')" disabled>↓ Zero Rated Sales</button>
+          <button class="btn btn-return" id="dl-zerosales-return" onclick="downloadSplit('zerosales','return')" disabled>↓ Zero Rated Sales Return</button>
+          <button class="btn btn-ghost" onclick="clearFile('zerosales')">Clear</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MENWAR PAGE -->
+<div class="page" id="page-menwar">
+  <div class="section-header">
+    <div class="breadcrumb">
+      <span onclick="showPage('home')">Home</span>
+      <span class="sep">/</span>
+      <span>Prepare VAT File</span>
+      <span class="sep">/</span>
+      <span style="color:var(--ink-2); font-weight:500;">Menwar</span>
+    </div>
+    <div class="section-title">Menwar</div>
+    <div class="section-sub">VAT processing module</div>
+  </div>
+  <div class="menwar-content">
+    <div class="coming-soon-box">
+      <div class="coming-soon-icon">🚧</div>
+      <h2>Coming Soon</h2>
+      <p>Menwar processing is under development. Check back later.</p>
+    </div>
+  </div>
+</div>
+
+<!-- VAT TRIMMER PAGE (combined STD + Zero) -->
+<div class="page" id="page-trimmer">
+  <div class="section-header">
+    <div class="breadcrumb">
+      <span onclick="showPage('home')">Home</span>
+      <span class="sep">/</span>
+      <span style="color:var(--ink-2);font-weight:500;">VAT Trimmer</span>
+    </div>
+    <div class="section-title">VAT Trimmer</div>
+    <div class="section-sub">Upload, set target value &amp; trim rows randomly by date range</div>
+  </div>
+
+  <!-- Type Toggle -->
+  <div style="max-width:860px;margin:1.25rem auto 0;padding:0 1.25rem;">
+    <div class="type-toggle">
+      <button class="toggle-btn active" id="toggle-std" onclick="setTrimType('std')">STD Rated Sales</button>
+      <button class="toggle-btn" id="toggle-zero" onclick="setTrimType('zero')">Zero Rated Sales</button>
+    </div>
+    <div class="trim-type-label" id="trim-type-label">STD Rated Sales</div>
+  </div>
+
+  <div class="trim-content" style="padding-top:1rem;">
+    <div class="trim-layout">
+
+      <!-- Upload Card -->
+      <div class="trim-card">
+        <div class="trim-card-title">📁 Upload Excel File</div>
+        <div class="trim-card-body">
+          <div class="upload-zone" id="zone-trim-main" onclick="document.getElementById('file-trim-main').click()">
+            <div class="upload-icon">⬆</div>
+            <div class="upload-label">Click to upload Excel</div>
+            <div class="upload-sub">.xlsx or .xls</div>
+            <input type="file" id="file-trim-main" accept=".xlsx,.xls" onchange="handleTrimFile(this,'main')">
+          </div>
+          <div class="file-info" id="trim-info-main">
+            <span class="file-name" id="trim-fname-main">—</span>
+            <span class="file-rows" id="trim-frows-main"></span>
+          </div>
+          <div class="trim-stats" id="trim-stats-main" style="display:none;margin-top:1rem;">
+            <div class="trim-stat-box highlight">
+              <div class="val" id="trim-total-main">0.000</div>
+              <div class="lbl">Total Value</div>
+            </div>
+            <div class="trim-stat-box">
+              <div class="val" id="trim-rows-main">0</div>
+              <div class="lbl">Total Rows</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Card -->
+      <div class="trim-card">
+        <div class="trim-card-title">⚙️ Processing Settings</div>
+        <div class="trim-card-body">
+          <div class="form-row">
+            <label class="form-label">Target Value (amount to keep)</label>
+            <input type="number" step="0.001" class="form-input" id="trim-target-main" placeholder="e.g. 300.200">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Date From</label>
+              <input type="text" class="form-input" id="trim-datefrom-main" placeholder="01-01-2026">
+            </div>
+            <div>
+              <label class="form-label">Date To</label>
+              <input type="text" class="form-input" id="trim-dateto-main" placeholder="31-03-2026">
+            </div>
+          </div>
+          <div class="protected-dates-wrap">
+            <label class="protected-dates-label">🔒 Protected Dates (will NOT be deleted)</label>
+            <div class="date-picker-wrap">
+              <select class="date-picker-select" id="trim-datepicker-main" size="4" multiple>
+                <option disabled>— upload a file to see dates —</option>
+              </select>
+            </div>
+            <div class="protected-dates-tags" id="trim-protected-tags-main"></div>
+          </div>
+          <div class="trim-stat-box warn" id="trim-diff-box-main" style="display:none;margin-bottom:1rem;">
+            <div class="val" id="trim-diff-main">0.000</div>
+            <div class="lbl">Will delete rows totalling this value</div>
+          </div>
+          <button class="btn-process" id="trim-btn-main" onclick="processTrim('main')" disabled>Process &amp; Trim Rows</button>
+          <div class="result-panel" id="trim-result-main">
+            <div class="result-title" id="trim-result-title-main"></div>
+            <div class="result-row" id="trim-result-detail-main"></div>
+            <button class="btn-dl-result" id="trim-dl-main" onclick="downloadTrim('main')">↓ Download Trimmed File</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  <strong>VATFlow</strong> · Built for Noah · VAT File Processing Tool
+</footer>
+
+</div><!-- end #app -->
+
+<script>
+const NUM_KEYS = ['value','vatamount','vat amount','vat','amount','qty','quantity','rate','price','total'];
+const DATE_KEYS = ['date','invoicedate','invoice date'];
+const store = {};
+
+const FILE_NAMES = {
+  stdpurchase:  { main: 'STD Rated Purchase',       ret: 'STD Rated Purchase Return' },
+  zeropurchase: { main: 'Zero Rated Purchase',      ret: 'Zero Rated Purchase Return' },
+  stdsales:     { main: 'STD Rated Sales',           ret: 'STD Rated Sales Return' },
+  zerosales:    { main: 'Zero Rated Sales',          ret: 'Zero Rated Sales Return' },
+};
+
+function isNumCol(h) {
+  return NUM_KEYS.some(k => String(h).toLowerCase().replace(/\s+/g,'').includes(k.replace(/\s+/g,'')));
+}
+function isDateCol(h) {
+  return DATE_KEYS.some(k => String(h).toLowerCase().replace(/\s+/g,'').includes(k.replace(/\s+/g,'')));
+}
+function toNum(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v).replace(/[,\s]/g,''));
+  return isNaN(n) ? v : n;
+}
+// Convert Excel serial date OR any date value → "DD-MM-YYYY"
+function toDateStr(v) {
+  if (v === null || v === undefined || v === '') return '';
+  // Already a string like "01-10-2025" or "2025-10-01" or "01/10/2025"
+  if (typeof v === 'string') {
+    const s = v.trim();
+    // DD-MM-YYYY or DD/MM/YYYY already
+    if (/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(s)) return s.replace(/\//g, '-');
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      const [y,m,d] = s.split('-');
+      return `${d}-${m}-${y}`;
+    }
+    return s;
+  }
+  // Excel serial number
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    const dd = String(d.getUTCDate()).padStart(2,'0');
+    const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+    const yyyy = d.getUTCFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+  // JS Date object (when XLSX parses with cellDates)
+  if (v instanceof Date) {
+    const dd = String(v.getDate()).padStart(2,'0');
+    const mm = String(v.getMonth()+1).padStart(2,'0');
+    const yyyy = v.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+  return String(v);
+}
+
+function handleFile(input, id) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+
+      let headerRow = -1;
+      for (let i = 0; i < Math.min(12, raw.length); i++) {
+        if (raw[i].some(c => /invoicedate|party|vch_type|trn|date|invoice/i.test(String(c)))) {
+          headerRow = i; break;
+        }
+      }
+      if (headerRow < 0) headerRow = 0;
+
+      const headers = raw[headerRow].map(h => String(h).trim());
+      // Re-read with raw:true to get serial numbers for date cols
+      const rawNums = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', raw: true });
+      const dataRowsRaw = rawNums.slice(headerRow + 1).filter(r => r.some(c => c !== ''));
+
+      const allRows = dataRowsRaw.map(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          const v = row[i] === undefined ? '' : row[i];
+          if (isDateCol(h)) {
+            obj[h] = toDateStr(v);
+          } else if (isNumCol(h)) {
+            obj[h] = toNum(v);
+          } else {
+            obj[h] = v;
+          }
+        });
+        return obj;
+      }).filter(row => {
+        // Remove rows that look like total/summary rows:
+        // - no date AND no voucher type AND at least one num col has value (looks like a total row)
+        // - OR all non-num cols are empty (pure number row = total)
+        const dateKey2 = headers.find(h => isDateCol(h)) || '';
+        const vchKey2  = headers.find(h => /vch_?type|voucher\s*type/i.test(h)) || '';
+        const hasDate  = dateKey2 && row[dateKey2] && /^\d{2}-\d{2}-\d{4}$/.test(row[dateKey2]);
+        const hasVch   = vchKey2 && String(row[vchKey2]||'').trim() !== '';
+        // Keep row only if it has a valid date OR a voucher type
+        return hasDate || hasVch;
+      });
+
+      // Use proper sheet name as title based on id and type
+      const sheetTitles = {
+        stdpurchase:  { main: 'STD RATED PURCHASE',        ret: 'STD RATED PURCHASE RETURN' },
+        zeropurchase: { main: 'ZERO RATED PURCHASE',       ret: 'ZERO RATED PURCHASE RETURN' },
+        stdsales:     { main: 'STD RATED SALES',            ret: 'STD RATED SALES RETURN' },
+        zerosales:    { main: 'ZERO RATED SALES',           ret: 'ZERO RATED SALES RETURN' },
+      };
+
+      // Auto-detect company name from first non-empty rows before header
+      // Skip generic VAT report title rows
+      const SKIP_PATTERNS = /input\s*vat|output\s*vat|vat\s*report|detailed\s*report|report\s*date/i;
+      let companyName = '';
+      for (let i = 0; i < headerRow; i++) {
+        const rowStr = rawNums[i].filter(c => c !== '').join(' ').trim();
+        if (rowStr.length > 3 && !SKIP_PATTERNS.test(rowStr)) {
+          companyName = rowStr; break;
+        }
+      }
+      // Extract company part after last ' - ' if present
+      // e.g. "STD RATED PURCHASE - JN 24 MARKET W.L.L" → "JN 24 MARKET W.L.L"
+      const dashIdx = companyName.lastIndexOf(' - ');
+      const company = dashIdx > -1 ? companyName.slice(dashIdx + 3).trim() : companyName.trim();
+
+      // Split by Vch_Type or Voucher Type (handles both Purchase Return / Sales Return)
+      const vchKey = headers.find(h => /vch_?type|voucher\s*type/i.test(h)) || '';
+      const mainRows   = allRows.filter(r => !String(r[vchKey]||'').toLowerCase().includes('return'));
+      const returnRows = allRows.filter(r =>  String(r[vchKey]||'').toLowerCase().includes('return'));
+
+      // Extract date range from all data rows
+      const dateKey = headers.find(h => isDateCol(h)) || '';
+      const allDatesForRange = allRows.map(r => r[dateKey]).filter(d => /^\d{2}-\d{2}-\d{4}$/.test(d));
+      const sortedForRange = allDatesForRange.slice().sort((a,b) => parseDMY2(a)-parseDMY2(b));
+      const rangeFirst = sortedForRange[0] || '';
+      const rangeLast  = sortedForRange[sortedForRange.length-1] || '';
+
+      store[id] = { headers, mainRows, returnRows, filename: file.name, sheetTitles: sheetTitles[id], company, rangeFirst, rangeLast, dateKey };
+
+      document.getElementById('fname-' + id).textContent = file.name;
+      document.getElementById('frows-' + id).textContent = `${mainRows.length} purchase · ${returnRows.length} return`;
+      document.getElementById('info-' + id).classList.add('show');
+      document.getElementById('dot-' + id).className = 'status-dot ready';
+      document.getElementById('status-' + id).textContent = `${allRows.length} rows · ${mainRows.length} main · ${returnRows.length} return`;
+
+      // Enable buttons based on data availability
+      const dlMain = document.getElementById('dl-' + id + '-main');
+      const dlRet  = document.getElementById('dl-' + id + '-return');
+      if (dlMain) dlMain.disabled = mainRows.length === 0;
+      if (dlRet)  dlRet.disabled  = returnRows.length === 0;
+
+      renderPreview(id);
+    } catch(err) {
+      document.getElementById('dot-' + id).className = 'status-dot error';
+      document.getElementById('status-' + id).textContent = 'Error reading file';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderPreview(id) {
+  const d = store[id];
+  if (!d) return;
+  const previewRows = [...d.mainRows, ...d.returnRows].slice(0, 5);
+  const cols = d.headers.slice(0, 7);
+
+  let html = '<table><thead><tr>';
+  cols.forEach(h => { html += `<th>${h}</th>`; });
+  if (d.headers.length > 7) html += `<th>+${d.headers.length - 7} more</th>`;
+  html += '</tr></thead><tbody>';
+  previewRows.forEach(row => {
+    html += '<tr>';
+    cols.forEach(h => {
+      const v = row[h];
+      const isN = typeof v === 'number';
+      html += `<td class="${isN ? 'num-td' : ''}">${isN ? v.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:3}) : (v||'')}</td>`;
+    });
+    if (d.headers.length > 7) html += '<td>…</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  document.getElementById('preview-table-' + id).innerHTML = html;
+  document.getElementById('preview-count-' + id).textContent = `Showing ${previewRows.length} of ${d.mainRows.length + d.returnRows.length}`;
+  document.getElementById('preview-' + id).classList.add('show');
+}
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function parseDMY2(s) {
+  if (!s) return 0;
+  const p = s.split('-');
+  if (p.length !== 3) return 0;
+  return parseInt(p[2] + p[1] + p[0], 10);
+}
+
+function formatDateHeader(dmy) {
+  if (!dmy || !/^\d{2}-\d{2}-\d{4}$/.test(dmy)) return dmy;
+  const [dd, mm, yyyy] = dmy.split('-');
+  return `${parseInt(dd)} ${MONTHS[parseInt(mm)-1]} ${yyyy}`;
+}
+
+function getQuarterRange(firstDMY, lastDMY) {
+  // Returns "01 JAN 2026 to 31 MAR 2026" style
+  // First try to snap to quarter boundaries
+  if (!firstDMY || !lastDMY) return '';
+  const [, fm, fy] = firstDMY.split('-').map(Number);
+  const [, lm, ly] = lastDMY.split('-').map(Number);
+
+  const quarterStart = [[1,'JAN',1],[4,'APR',1],[7,'JUL',1],[10,'OCT',1]];
+  const quarterEnd   = [[3,'MAR',31],[6,'JUN',30],[9,'SEP',30],[12,'DEC',31]];
+
+  // Find nearest quarter start for first month
+  const qs = quarterStart.find(([m]) => m <= fm && fm <= m+2) || quarterStart.find(([m]) => m <= fm);
+  const qe = quarterEnd.find(([m]) => m <= lm && lm <= m+2) || quarterEnd.find(([m]) => m <= lm);
+
+  if (qs && qe) {
+    return `${qs[2]} ${qs[1]} ${fy} to ${qe[2]} ${qe[1]} ${ly}`;
+  }
+  return `${formatDateHeader(firstDMY)} to ${formatDateHeader(lastDMY)}`;
+}
+
+function buildWb(headers, rows, meta) {
+  const wb = XLSX.utils.book_new();
+  const TOTAL_COLS = ['value','vatamount','netamount'];
+  const FMT_COLS   = ['value','vatamount','netamount']; // 0.000 format
+
+  // Header rows from Excel title & date range
+  const title     = (meta && meta.excelTitle) ? String(meta.excelTitle).toUpperCase() : '';
+  const dateRange = (meta && meta.rangeFirst && meta.rangeLast)
+    ? 'Report Date: ' + getQuarterRange(meta.rangeFirst, meta.rangeLast)
+    : '';
+
+  // Build total row
+  const totalRowArr = headers.map(h => {
+    if (TOTAL_COLS.includes(h.toLowerCase().trim())) {
+      const sum = rows.reduce((s, r) => {
+        const v = parseFloat(r[h]);
+        return s + (isNaN(v) ? 0 : v);
+      }, 0);
+      return parseFloat(sum.toFixed(3));
+    }
+    return '';
+  });
+
+  // wsData: blank, title, date range, blank, headers, ...data rows, total row
+  const blankRow = headers.map(() => '');
+  const titleRow = [title, ...headers.slice(1).map(() => '')];
+  const dateRow  = [dateRange, ...headers.slice(1).map(() => '')];
+
+  const wsData = [
+    blankRow,
+    titleRow,
+    dateRow,
+    blankRow,
+    headers,
+    ...rows.map(r => headers.map(h => {
+      const v = r[h];
+      if (FMT_COLS.includes(h.toLowerCase().trim())) {
+        const n = parseFloat(v);
+        return isNaN(n) ? 0 : parseFloat(n.toFixed(3));
+      }
+      return v;
+    })),
+    totalRowArr
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Row offsets: 0=blank,1=title,2=date,3=blank,4=headers,5..=data, last=total
+  const dataStartRow = 5;
+  const totalRowIdx  = dataStartRow + rows.length;
+
+  // Style title row — bold, merged feel
+  if (!ws['A2']) ws['A2'] = { t: 's', v: title };
+  ws['A2'].s = { font: { bold: true, sz: 12 } };
+
+  if (!ws['A3']) ws['A3'] = { t: 's', v: dateRange };
+  ws['A3'].s = { font: { bold: false, sz: 10, color: { rgb: '555555' } } };
+
+  // Style header row (row index 4 = row 5 in Excel)
+  headers.forEach((h, ci) => {
+    const addr = XLSX.utils.encode_cell({ r: 4, c: ci });
+    if (!ws[addr]) ws[addr] = { t: 's', v: h };
+    ws[addr].s = { font: { bold: true } };
+  });
+
+  // Format numeric data cells to 0.000
+  headers.forEach((h, ci) => {
+    if (FMT_COLS.includes(h.toLowerCase().trim())) {
+      rows.forEach((_, ri) => {
+        const addr = XLSX.utils.encode_cell({ r: dataStartRow + ri, c: ci });
+        if (ws[addr]) { ws[addr].t = 'n'; ws[addr].z = '0.000'; }
+      });
+    }
+  });
+
+  // Bold + 0.000 format for total row
+  headers.forEach((h, ci) => {
+    const addr = XLSX.utils.encode_cell({ r: totalRowIdx, c: ci });
+    if (!ws[addr]) ws[addr] = { t: 'z', v: '' };
+    ws[addr].s = { font: { bold: true } };
+    if (typeof totalRowArr[ci] === 'number') {
+      ws[addr].t = 'n';
+      ws[addr].z = '0.000';
+    }
+  });
+
+  // Merge title cell across all columns
+  if (!ws['!merges']) ws['!merges'] = [];
+  ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } });
+  ws['!merges'].push({ s: { r: 2, c: 0 }, e: { r: 2, c: headers.length - 1 } });
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  return wb;
+}
+
+function downloadSplit(id, type) {
+  const d = store[id];
+  if (!d) return;
+  const names = FILE_NAMES[id];
+  const sheetLabel = type === 'main' ? d.sheetTitles.main : d.sheetTitles.ret;
+  const excelTitle = d.company ? `${sheetLabel} - ${d.company}` : sheetLabel;
+  const meta = { excelTitle, rangeFirst: d.rangeFirst, rangeLast: d.rangeLast };
+  const filename = (type === 'main' ? names.main : names.ret) + '.xlsx';
+  const rows = type === 'main' ? d.mainRows : d.returnRows;
+  if (!rows.length) return;
+  XLSX.writeFile(buildWb(d.headers, rows, meta), filename, { cellStyles: true });
+}
+
+function clearFile(id) {
+  delete store[id];
+  document.getElementById('file-' + id).value = '';
+  document.getElementById('info-' + id).classList.remove('show');
+  document.getElementById('preview-' + id).classList.remove('show');
+  document.getElementById('dot-' + id).className = 'status-dot';
+  document.getElementById('status-' + id).textContent = 'No file loaded';
+  const dlMain = document.getElementById('dl-' + id + '-main');
+  const dlRet  = document.getElementById('dl-' + id + '-return');
+  if (dlMain) dlMain.disabled = true;
+  if (dlRet)  dlRet.disabled  = true;
+}
+
+function toggleMobileMenu() {
+  const menu = document.getElementById('nav-menu');
+  const btn  = document.getElementById('hamburger');
+  menu.classList.toggle('mobile-open');
+  btn.classList.toggle('open');
+}
+
+function closeMobileMenu() {
+  document.getElementById('nav-menu').classList.remove('mobile-open');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  closeMobileMenu();
+  window.scrollTo(0, 0);
+}
+
+function closeDropdowns() {} // kept for compatibility
+
+['stdpurchase','zeropurchase','stdsales','zerosales'].forEach(id => {
+  const zone = document.getElementById('zone-' + id);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const input = document.getElementById('file-' + id);
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleFile(input, id);
+    }
+  });
+});
+
+// ── LOGIN ────────────────────────────────────────────────
+const VALID_USER = 'iamnoah';
+const VALID_PIN  = '123';
+let pinEntry = '';
+
+function checkUsername() {
+  const val = document.getElementById('login-username').value.trim().toLowerCase();
+  const input = document.getElementById('login-username');
+  const err = document.getElementById('err-username');
+  if (val === VALID_USER) {
+    document.getElementById('step-username').classList.remove('active');
+    document.getElementById('step-pin').classList.add('active');
+    err.textContent = '';
+    input.classList.remove('error');
+  } else {
+    err.textContent = 'Incorrect username. Please try again.';
+    input.classList.add('error');
+    shakeBox();
+    input.focus();
+  }
+}
+
+function pinPress(digit) {
+  if (pinEntry.length >= VALID_PIN.length) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === VALID_PIN.length) {
+    setTimeout(checkPin, 120);
+  }
+}
+
+function pinDel() {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+  document.getElementById('err-pin').textContent = '';
+}
+
+function pinClear() {
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('err-pin').textContent = '';
+}
+
+function updatePinDots() {
+  for (let i = 0; i < VALID_PIN.length; i++) {
+    const dot = document.getElementById('dot' + i);
+    if (dot) dot.classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+function checkPin() {
+  if (pinEntry === VALID_PIN) {
+    // Save session
+    sessionStorage.setItem('vatflow_auth', '1');
+    // Success — fade out login screen
+    const ls = document.getElementById('login-screen');
+    ls.style.transition = 'opacity 0.4s ease';
+    ls.style.opacity = '0';
+    setTimeout(() => {
+      ls.classList.add('hidden');
+      document.getElementById('app').style.display = 'block';
+    }, 400);
+  } else {
+    document.getElementById('err-pin').textContent = 'Incorrect PIN. Try again.';
+    shakeBox();
+    pinEntry = '';
+    updatePinDots();
+  }
+}
+
+// Auto-skip login if session exists
+(function() {
+  if (sessionStorage.getItem('vatflow_auth') === '1') {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').style.display = 'block';
+  }
+})();
+
+function shakeBox() {
+  const box = document.getElementById('login-box');
+  box.classList.remove('login-shake');
+  void box.offsetWidth; // reflow
+  box.classList.add('login-shake');
+}
+
+// Allow keyboard PIN entry on step-pin
+document.addEventListener('keydown', e => {
+  const pinStep = document.getElementById('step-pin');
+  if (!pinStep.classList.contains('active')) return;
+  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+  else if (e.key === 'Backspace') pinDel();
+  else if (e.key === 'Escape') pinClear();
+});
+
+const trimStore = {};
+let currentTrimType = 'std';
+
+function setTrimType(type) {
+  currentTrimType = type;
+  document.getElementById('toggle-std').classList.toggle('active', type === 'std');
+  document.getElementById('toggle-zero').classList.toggle('active', type === 'zero');
+  document.getElementById('trim-type-label').textContent = type === 'std' ? 'STD Rated Sales' : 'Zero Rated Sales';
+}
+
+// Parse DD-MM-YYYY → comparable integer YYYYMMDD
+function parseDMY(s) {
+  if (!s) return null;
+  const p = String(s).trim().split('-');
+  if (p.length !== 3) return null;
+  return parseInt(p[2] + p[1] + p[0], 10); // YYYYMMDD
+}
+
+function handleTrimFile(input, id) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+      const rawNums = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', raw: true });
+
+      // Find header row
+      let headerRow = -1;
+      for (let i = 0; i < Math.min(12, rawNums.length); i++) {
+        if (rawNums[i].some(c => /invoicedate|party|vch_type|trn|date|invoice|voucher/i.test(String(c)))) {
+          headerRow = i; break;
+        }
+      }
+      if (headerRow < 0) headerRow = 0;
+
+      const headers = rawNums[headerRow].map(h => String(h).trim());
+      const dateKey  = headers.find(h => isDateCol(h)) || '';
+      const valueKey = headers.find(h => /^value$/i.test(h.trim())) || '';
+
+      // Filter out non-data rows:
+      // - must have a valid date in the date column
+      // - voucher/sale type must look like real data (not dashes/totals)
+      const dataRows = rawNums.slice(headerRow + 1).filter(row => {
+        const dateVal = row[headers.indexOf(dateKey)];
+        const vchVal  = String(row[headers.indexOf(headers.find(h => /vch_?type|voucher\s*type/i.test(h)) || '')] || '');
+        // Skip rows where date is empty/non-date or value looks like separator
+        if (!dateVal && !vchVal) return false;
+        const dateStr = toDateStr(dateVal);
+        if (!dateStr || !/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return false;
+        return true;
+      });
+
+      const rows = dataRows.map(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          const v = row[i] === undefined ? '' : row[i];
+          if (isDateCol(h)) obj[h] = toDateStr(v);
+          else if (isNumCol(h)) obj[h] = toNum(v);
+          else obj[h] = v;
+        });
+        return obj;
+      });
+
+      // Compute total value (only numeric, positive+negative real values)
+      const totalVal = rows.reduce((s, r) => {
+        const v = parseFloat(r[valueKey]);
+        return s + (isNaN(v) ? 0 : v);
+      }, 0);
+
+      // Auto-detect first and last date
+      const allDates = rows.map(r => r[dateKey]).filter(d => /^\d{2}-\d{2}-\d{4}$/.test(d));
+      const sortedDates = allDates.slice().sort((a, b) => parseDMY(a) - parseDMY(b));
+      const firstDate = sortedDates[0] || '';
+      const lastDate  = sortedDates[sortedDates.length - 1] || '';
+
+      trimStore[id] = { headers, rows, valueKey, dateKey, totalVal, filename: file.name, trimmedRows: null };
+
+      // UI update
+      document.getElementById('trim-fname-' + id).textContent = file.name;
+      document.getElementById('trim-frows-' + id).textContent = rows.length + ' rows';
+      document.getElementById('trim-info-' + id).classList.add('show');
+      document.getElementById('trim-total-' + id).textContent = totalVal.toFixed(3);
+      document.getElementById('trim-rows-' + id).textContent = rows.length;
+      document.getElementById('trim-stats-' + id).style.display = 'grid';
+      document.getElementById('trim-btn-' + id).disabled = false;
+      document.getElementById('trim-result-' + id).classList.remove('show','error');
+
+      // Auto-fill date fields
+      document.getElementById('trim-datefrom-' + id).value = firstDate;
+      document.getElementById('trim-dateto-' + id).value   = lastDate;
+
+      // Populate date picker with unique sorted dates
+      const uniqueDates = [...new Set(allDates)].sort((a,b) => parseDMY(a) - parseDMY(b));
+      const picker = document.getElementById('trim-datepicker-' + id);
+      picker.innerHTML = '';
+      uniqueDates.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d; opt.textContent = d;
+        picker.appendChild(opt);
+      });
+      // On click, toggle protected date tag
+      picker.onchange = () => {
+        [...picker.selectedOptions].forEach(opt => {
+          addProtectedDate(id, opt.value);
+          opt.selected = false;
+        });
+      };
+      // Clear protected dates on new file
+      trimStore[id].protectedDates = new Set();
+      document.getElementById('trim-protected-tags-' + id).innerHTML = '';
+
+      // Live diff update on target input
+      document.getElementById('trim-target-' + id).oninput = () => updateDiff(id);
+    } catch(err) {
+      alert('Error reading file: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function updateDiff(id) {
+  const d = trimStore[id];
+  if (!d) return;
+  const target = parseFloat(document.getElementById('trim-target-' + id).value);
+  const diffBox = document.getElementById('trim-diff-box-' + id);
+  const diffEl  = document.getElementById('trim-diff-' + id);
+  if (!isNaN(target) && target > 0) {
+    const diff = d.totalVal - target;
+    diffEl.textContent = diff.toFixed(3);
+    diffBox.style.display = 'block';
+  } else {
+    diffBox.style.display = 'none';
+  }
+}
+
+function addProtectedDate(id, date) {
+  const d = trimStore[id];
+  if (!d || !date) return;
+  if (!d.protectedDates) d.protectedDates = new Set();
+  if (d.protectedDates.has(date)) return;
+  d.protectedDates.add(date);
+  renderProtectedTags(id);
+}
+
+function removeProtectedDate(id, date) {
+  const d = trimStore[id];
+  if (!d || !d.protectedDates) return;
+  d.protectedDates.delete(date);
+  renderProtectedTags(id);
+}
+
+function renderProtectedTags(id) {
+  const d = trimStore[id];
+  const container = document.getElementById('trim-protected-tags-' + id);
+  container.innerHTML = '';
+  if (!d || !d.protectedDates || d.protectedDates.size === 0) return;
+  [...d.protectedDates].sort().forEach(date => {
+    const tag = document.createElement('div');
+    tag.className = 'date-tag';
+    tag.innerHTML = `${date} <button onclick="removeProtectedDate('${id}','${date}')" title="Remove">✕</button>`;
+    container.appendChild(tag);
+  });
+}
+
+function processTrim(id) {
+  const d = trimStore[id];
+  if (!d) return;
+
+  const target    = parseFloat(document.getElementById('trim-target-' + id).value);
+  const dateFrom  = parseDMY(document.getElementById('trim-datefrom-' + id).value);
+  const dateTo    = parseDMY(document.getElementById('trim-dateto-' + id).value);
+  const resultEl  = document.getElementById('trim-result-' + id);
+  const titleEl   = document.getElementById('trim-result-title-' + id);
+  const detailEl  = document.getElementById('trim-result-detail-' + id);
+
+  resultEl.classList.remove('show','error');
+
+  if (isNaN(target) || target <= 0) {
+    resultEl.classList.add('show','error');
+    titleEl.textContent = '❌ Target value is required';
+    detailEl.textContent = 'Please enter a valid target value.';
+    return;
+  }
+
+  const diff = parseFloat((d.totalVal - target).toFixed(6));
+  if (diff <= 0) {
+    resultEl.classList.add('show','error');
+    titleEl.textContent = '❌ Target is already met';
+    detailEl.textContent = `Total (${d.totalVal.toFixed(3)}) is already ≤ target (${target.toFixed(3)}).`;
+    return;
+  }
+
+  // Filter rows eligible for deletion (within date range, NOT protected)
+  const dateKey = d.headers.find(h => isDateCol(h)) || '';
+  const protectedDates = d.protectedDates || new Set();
+  let eligible = [];
+
+  d.rows.forEach((row, idx) => {
+    const rowDate = parseDMY(row[dateKey]);
+    const rowDateStr = row[dateKey] || '';
+    const inRange = (!dateFrom && !dateTo) ||
+      (rowDate && (!dateFrom || rowDate >= dateFrom) && (!dateTo || rowDate <= dateTo));
+    const isProtected = protectedDates.has(rowDateStr);
+    if (inRange && !isProtected) eligible.push({ row, idx });
+  });
+
+  if (!eligible.length) {
+    resultEl.classList.add('show','error');
+    titleEl.textContent = '❌ No rows in date range';
+    detailEl.textContent = 'No rows found in the specified date range.';
+    return;
+  }
+
+  // Shuffle eligible rows randomly
+  for (let i = eligible.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
+  }
+
+  // Greedily pick rows to delete until we reach diff
+  let runningSum = 0;
+  const toDelete = new Set();
+
+  for (const item of eligible) {
+    if (runningSum >= diff - 0.0005) break;
+    const v = parseFloat(item.row[d.valueKey]);
+    if (isNaN(v) || v <= 0) continue;
+    if (runningSum + v <= diff + 0.0005) {
+      toDelete.add(item.idx);
+      runningSum = parseFloat((runningSum + v).toFixed(6));
+    }
+  }
+
+  // Build kept rows preserving original order
+  const keptRows = d.rows.filter((_, idx) => !toDelete.has(idx));
+  const newTotal = keptRows.reduce((s, r) => {
+    const v = parseFloat(r[d.valueKey]);
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+
+  d.trimmedRows = keptRows;
+
+  resultEl.classList.add('show');
+  titleEl.textContent = '✅ Processing Complete';
+  detailEl.innerHTML =
+    `Rows deleted: <strong>${toDelete.size}</strong> &nbsp;|&nbsp; ` +
+    `Value deleted: <strong>${runningSum.toFixed(3)}</strong><br>` +
+    `Original total: <strong>${d.totalVal.toFixed(3)}</strong> &nbsp;→&nbsp; ` +
+    `New total: <strong>${newTotal.toFixed(3)}</strong> &nbsp;(target: ${target.toFixed(3)})`;
+}
+
+function downloadTrim(id) {
+  const d = trimStore[id];
+  if (!d || !d.trimmedRows) return;
+  const filename = currentTrimType === 'std' ? 'STD Rated Sales' : 'Zero Rated Sales';
+
+  const wb = XLSX.utils.book_new();
+  const rows = d.trimmedRows;
+
+  // Build totals row — sum Value, VATAmount, NetAmount columns
+  const totalCols = ['Value','VATAmount','NetAmount','value','vatamount','netamount'];
+  const totalRow = {};
+  d.headers.forEach(h => { totalRow[h] = ''; });
+  d.headers.forEach(h => {
+    if (totalCols.some(k => k.toLowerCase() === h.toLowerCase())) {
+      totalRow[h] = rows.reduce((s, r) => {
+        const v = parseFloat(r[h]);
+        return s + (isNaN(v) ? 0 : v);
+      }, 0);
+    }
+  });
+
+  const wsData = [d.headers, ...rows.map(r => d.headers.map(h => r[h])), d.headers.map(h => totalRow[h])];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Format number cols
+  d.headers.forEach((h, ci) => {
+    if (isNumCol(h)) {
+      rows.forEach((_, ri) => {
+        const addr = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
+        if (ws[addr] && typeof ws[addr].v === 'number') ws[addr].t = 'n';
+      });
+    }
+  });
+
+  // Bold the total row
+  const totalRowIdx = rows.length + 1;
+  d.headers.forEach((h, ci) => {
+    const addr = XLSX.utils.encode_cell({ r: totalRowIdx, c: ci });
+    if (!ws[addr]) ws[addr] = { t: 'z', v: '' };
+    ws[addr].s = { font: { bold: true } };
+    // Format numbers in total row
+    const tv = totalRow[h];
+    if (typeof tv === 'number') {
+      ws[addr].t = 'n';
+      ws[addr].v = parseFloat(tv.toFixed(3));
+    }
+  });
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, filename + '_trimmed.xlsx', { cellStyles: true });
+}
+
+// Drag & drop for combined trim zone
+const trimZone = document.getElementById('zone-trim-main');
+if (trimZone) {
+  trimZone.addEventListener('dragover', e => { e.preventDefault(); trimZone.classList.add('drag'); });
+  trimZone.addEventListener('dragleave', () => trimZone.classList.remove('drag'));
+  trimZone.addEventListener('drop', e => {
+    e.preventDefault(); trimZone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const input = document.getElementById('file-trim-main');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleTrimFile(input, 'main');
+    }
+  });
+}
+</script>
 </body>
-</html>
+    </html>
