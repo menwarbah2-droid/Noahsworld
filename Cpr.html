@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart ID Card Scanner | Standalone Offline Edition</title>
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg: #080b12;
+            --surface: #0a0f1a;
+            --card: #161c28;
+            --border: #232c3d;
+            --accent: #3b82f6;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: #f1f5f9; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .active-tab { 
+            color: #60a5fa; 
+            border-bottom: 2px solid var(--accent); 
+        }
+
+        #a4 { 
+            background: white; 
+            width: 360px; 
+            height: 509px; 
+            position: relative; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            transition: all 0.5s ease;
+            transform-origin: center;
+        }
+        #a4.landscape { width: 509px; height: 360px; }
+
+        .cslot { 
+            background: #ffffff;
+            border: 2.5px solid #cbd5e1;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24), 0 10px 10px rgba(0, 0, 0, 0.18);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cslot:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3), 0 14px 14px rgba(0, 0, 0, 0.22);
+        }
+        .cslot img { width: 100%; height: 100%; object-fit: cover; }
+
+        input:focus { outline: none; border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+
+        /* Perspective Corner Handles */
+        .corner-handle {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            margin-left: -24px;
+            margin-top: -24px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 50%;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            touch-action: none;
+        }
+        .corner-dot {
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        }
+
+        button:active { transform: scale(0.96); }
+    </style>
+<script src="/_aistudio-iframe.js"></script></head>
+<body class="min-h-screen pb-20">
+
+    <header class="sticky top-0 z-50 bg-[#0a0f1a]/80 backdrop-blur-xl border-b border-blue-900/30 px-3 md:px-6 py-2.5 md:py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)] shrink-0">
+                <i data-lucide="scan" class="w-3.5 h-3.5 md:w-5 md:h-5 text-white"></i>
+            </div>
+            <div class="min-w-0">
+                <h1 class="text-sm md:text-lg lg:text-xl font-black text-white uppercase tracking-tight leading-tight truncate">Smart ID card scanner</h1>
+                <p class="text-[7px] md:text-[10px] lg:text-[11px] font-bold text-blue-400 uppercase tracking-widest leading-none mt-0.5 truncate font-mono">STANDALONE OFFLINE EDITION BY ARIF</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1.5 md:gap-2">
+            <button onclick="generatePDF()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-colors shrink-0">
+                <i data-lucide="file-down" class="w-3 h-3 md:w-4 md:h-4"></i> <span class="hidden sm:inline">PDF</span>
+            </button>
+            <button onclick="generateJPG()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all shrink-0">
+                <i data-lucide="download" class="w-3 h-3 md:w-4 md:h-4"></i> <span class="hidden sm:inline">JPG</span>
+            </button>
+            <button onclick="clearAllData()" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-xs font-bold flex items-center gap-1.5 border border-red-500/20 transition-all shrink-0">
+                <i data-lucide="trash-2" class="w-3 h-3 md:w-4 md:h-4"></i> <span class="hidden sm:inline">CLEAR</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="bg-[#0e1219] border-b border-slate-800/50 flex sticky top-[50px] md:top-[68px] z-40 bg-[#0e1219]/90 backdrop-blur-md px-3 md:px-4 py-2">
+        <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
+            <div class="flex bg-slate-900 rounded-lg p-0.5 md:p-1 border border-slate-800 overflow-hidden shadow-inner">
+                <button onclick="setTab('cpr')" id="tab-cpr" class="px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+                    ID Card
+                </button>
+                <button onclick="setTab('passport')" id="tab-passport" class="px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-white">
+                    Passport
+                </button>
+            </div>
+            <div class="flex items-center gap-1.5 text-[7px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest truncate ml-2">
+                <i data-lucide="scan" class="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-blue-500 shrink-0"></i> <span class="hidden xs:inline">UNIFIED SCANNER PRO</span>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-5xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
+        <!-- Capture Slots -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6" id="capture-grid">
+            <!-- Slot 1 -->
+            <div id="slot-container-1" class="bg-[#161c28] border border-slate-800 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group">
+                <div class="px-3 md:px-4 py-2 md:py-3 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between">
+                    <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-tight" id="label-1">Front Side</span>
+                </div>
+                <div class="relative flex-1 min-h-[180px] md:min-h-[220px] flex flex-col items-center justify-center p-4 md:p-6 cursor-pointer hover:bg-slate-800/30 overflow-hidden" id="dz-1" onclick="triggerFile('1')">
+                    <div id="placeholder-1" class="flex flex-col items-center">
+                        <i data-lucide="upload" class="w-8 h-8 md:w-10 md:h-10 text-slate-700 mb-2"></i>
+                        <p class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Tap to Upload</p>
+                    </div>
+                    <img id="img-1" src="" class="hidden w-full h-full object-contain rounded-lg">
+                    
+                    <!-- Filters & Tools Bar -->
+                    <div id="tools-1" class="absolute inset-x-0 bottom-0 p-2 md:p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent transition-transform duration-300 z-10 translate-y-full group-hover:translate-y-0">
+                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1" id="filters-1"></div>
+                    </div>
+
+                    <div id="corner-tools-1" class="absolute top-2 right-2 flex gap-1 md:gap-1.5 opacity-0 group-hover:opacity-100 transition-all z-20">
+                        <button onclick="event.stopPropagation(); startPersp('1')" class="bg-black/80 hover:bg-purple-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="scan" class="w-3.5 h-3.5 md:w-4 md:h-4 -rotate-45"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); startCrop('1')" class="bg-black/80 hover:bg-blue-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="crop" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); resetSlot('1')" class="bg-black/80 hover:bg-red-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="file-1" class="hidden" accept="image/*" onchange="handleFile(this, '1')">
+                <div class="p-2 md:p-3 bg-slate-900/30 border-t border-slate-800 flex gap-2">
+                    <button onclick="triggerFile('1')" class="flex-1 py-1.5 md:py-2 bg-slate-800 rounded-lg text-[10px] md:text-xs font-bold">Browse</button>
+                    <button onclick="toggleCam('1')" class="flex-1 py-1.5 md:py-2 bg-blue-500/10 text-blue-400 rounded-lg text-[10px] md:text-xs font-bold">Camera</button>
+                </div>
+            </div>
+
+            <!-- Slot 2 -->
+            <div id="slot-container-2" class="bg-[#161c28] border border-slate-800 rounded-xl md:rounded-2xl overflow-hidden flex flex-col group">
+                <div class="px-3 md:px-4 py-2 md:py-3 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between">
+                    <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-tight" id="label-2">Back Side</span>
+                </div>
+                <div class="relative flex-1 min-h-[180px] md:min-h-[220px] flex flex-col items-center justify-center p-4 md:p-6 cursor-pointer hover:bg-slate-800/30 overflow-hidden" id="dz-2" onclick="triggerFile('2')">
+                    <div id="placeholder-2" class="flex flex-col items-center">
+                        <i data-lucide="upload" class="w-8 h-8 md:w-10 md:h-10 text-slate-700 mb-2"></i>
+                        <p class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Tap to Upload</p>
+                    </div>
+                    <img id="img-2" src="" class="hidden w-full h-full object-contain rounded-lg">
+                    
+                    <div id="tools-2" class="absolute inset-x-0 bottom-0 p-2 md:p-3 bg-gradient-to-t from-black/95 via-black/80 to-transparent transition-transform duration-300 z-10 translate-y-full group-hover:translate-y-0">
+                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1" id="filters-2"></div>
+                    </div>
+
+                    <div id="corner-tools-2" class="absolute top-2 right-2 flex gap-1 md:gap-1.5 opacity-0 group-hover:opacity-100 transition-all z-20">
+                        <button onclick="event.stopPropagation(); startPersp('2')" class="bg-black/80 hover:bg-purple-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="scan" class="w-3.5 h-3.5 md:w-4 md:h-4 -rotate-45"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); startCrop('2')" class="bg-black/80 hover:bg-blue-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="crop" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); resetSlot('2')" class="bg-black/80 hover:bg-red-600 p-1.5 md:p-2 rounded-lg text-white">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5 md:w-4 md:h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="file-2" class="hidden" accept="image/*" onchange="handleFile(this, '2')">
+                <div class="p-2 md:p-3 bg-slate-900/30 border-t border-slate-800 flex gap-2">
+                    <button onclick="triggerFile('2')" class="flex-1 py-1.5 md:py-2 bg-slate-800 rounded-lg text-[10px] md:text-xs font-bold">Browse</button>
+                    <button onclick="toggleCam('2')" class="flex-1 py-1.5 md:py-2 bg-blue-500/10 text-blue-400 rounded-lg text-[10px] md:text-xs font-bold">Camera</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- A4 Preview -->
+        <section class="space-y-4 pt-8 md:pt-12 border-t border-slate-800/50">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-xs md:text-sm font-black text-blue-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                        Print Preview
+                    </h2>
+                    <p class="text-[9px] md:text-[10px] text-slate-500 font-medium">Document layout on virtual A4 paper</p>
+                </div>
+                <div class="bg-[#161c28] p-1 rounded-xl border border-slate-800 flex shadow-inner w-full sm:w-auto">
+                    <button onclick="setLayout('portrait')" id="btn-portrait" class="flex-1 px-4 py-1.5 bg-blue-500 text-white rounded-lg text-[10px] md:text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2">Portrait</button>
+                    <button onclick="setLayout('landscape')" id="btn-landscape" class="flex-1 px-4 py-1.5 text-slate-500 rounded-lg text-[10px] md:text-xs font-bold transition-all flex items-center justify-center gap-2">Landscape</button>
+                </div>
+            </div>
+
+            <div class="bg-black/60 border border-slate-800 rounded-xl md:rounded-2xl p-4 md:p-10 flex justify-center shadow-inner overflow-x-auto min-h-[400px]">
+                <div id="a4"></div>
+            </div>
+        </section>
+        
+        <footer class="mt-16 border-t border-slate-900/50 bg-[#070b12]/50 py-10 px-4 text-center">
+            <div class="max-w-5xl mx-auto flex flex-col items-center gap-2">
+                <p class="text-[10px] md:text-xs font-black text-slate-400 tracking-[0.3em] uppercase">Smart ID Card Scanner</p>
+                <p class="text-[9px] md:text-[11px] text-slate-500 font-medium max-w-lg leading-relaxed">
+                    Designed and developed with ❤️ by <span class="text-blue-400 font-bold uppercase tracking-wider">Arif</span>. A high-precision standalone scanning tool which runs completely locally inside your browser for maximum document security and absolute privacy.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-3 opacity-60 text-[8px] md:text-[9px] font-mono text-slate-600">
+                    <span>LOCAL PROCESSING ONLY</span>
+                    <span>•</span>
+                    <span>NO DATA TRANSMISSION</span>
+                    <span>•</span>
+                    <span>SECURE & PRIVATE</span>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Perspective Modal -->
+    <div id="persp-modal" class="fixed inset-0 z-[100] bg-black hidden flex flex-col">
+        <header class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase text-white">Corners & Perspective</h3>
+            <button onclick="closePersp()" class="p-2"><i data-lucide="x"></i></button>
+        </header>
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden bg-black p-4" id="persp-container">
+            <div id="persp-stage" class="relative inline-block">
+                <img id="persp-img" src="" class="max-w-[90vw] max-h-[70vh] opacity-30 select-none block">
+                <div id="handles-container"></div>
+                <svg id="persp-svg" class="absolute inset-0 w-full h-full pointer-events-none">
+                    <polyline id="persp-path" points="" style="fill:rgba(59,130,246,0.3); stroke:#3b82f6; stroke-width:2" />
+                </svg>
+            </div>
+        </div>
+        <footer class="p-6 bg-slate-900 border-t border-white/10 flex flex-col sm:flex-row justify-end gap-3">
+            <button onclick="closePersp()" class="px-6 py-3 bg-slate-800 rounded-xl text-xs font-bold">Cancel</button>
+            <button onclick="applyPersp()" class="px-6 py-3 bg-blue-600 rounded-xl text-xs font-bold text-white shadow-xl shadow-blue-500/20">Apply & Render</button>
+        </footer>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cam-modal" class="fixed inset-0 z-[100] bg-black hidden flex flex-col">
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <video id="v" class="max-w-full max-h-full" autoplay playsinline></video>
+            
+            <div id="cam-active-badge" class="absolute top-6 left-1/2 -translate-x-1/2 bg-blue-500/10 border border-blue-500/30 text-blue-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 backdrop-blur-md shadow-lg z-20">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                Auto-Border Detection Active
+            </div>
+
+            <div class="absolute inset-0 border-[40px] border-black/40 pointer-events-none flex items-center justify-center">
+                <div class="w-[85%] aspect-[1.58/1] border-2 border-white/50 rounded-2xl relative">
+                    <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"></div>
+                    <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"></div>
+                    <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"></div>
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-blue-500 rounded-br-lg"></div>
+                </div>
+            </div>
+        </div>
+        <div class="p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-black/80 backdrop-blur-md border-t border-slate-900/50">
+            <div class="flex items-center gap-4">
+                <button onclick="closeCam()" class="p-4 text-white hover:bg-white/10 rounded-full transition-colors" title="Close Camera">
+                    <i data-lucide="x" class="w-8 h-8"></i>
+                </button>
+                <div class="text-white hidden md:block">
+                    <p class="text-sm font-bold uppercase tracking-wider">Live Document Scan</p>
+                    <p class="text-xs text-slate-400">Align your card inside the guidelines</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+                <button onclick="capture()" class="w-20 h-20 bg-white rounded-full flex items-center justify-center p-1 border-4 border-blue-500 active:scale-95 transition-transform" title="Capture Photo">
+                    <div class="w-full h-full bg-white rounded-full border-2 border-slate-200 hover:bg-slate-50 transition-colors"></div>
+                </button>
+                <span class="text-[10px] text-blue-400 uppercase tracking-widest font-black animate-pulse">Click to Capture</span>
+            </div>
+
+            <button id="cam-autocrop-btn" onclick="toggleAutoCrop()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-600/20 border border-blue-500/50 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                <span class="relative flex h-2.5 w-2.5">
+                    <span id="cam-autocrop-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span id="cam-autocrop-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                </span>
+                <span id="cam-autocrop-text">Auto-Crop: ACTIVE</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cropper Modal -->
+    <div id="crop-modal" class="fixed inset-0 z-[100] bg-black/95 hidden flex items-center justify-center p-4">
+        <div class="bg-[#161c28] w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex-1 bg-black overflow-hidden">
+                <img id="crop-img-el" src="" class="block max-w-full">
+            </div>
+            <div class="p-4 bg-slate-900 flex gap-3">
+                <button onclick="cropper.rotate(-90)" class="p-3 bg-slate-800 rounded-lg text-white"><i data-lucide="rotate-ccw"></i></button>
+                <button onclick="cropper.rotate(90)" class="p-3 bg-slate-800 rounded-lg text-white"><i data-lucide="rotate-cw"></i></button>
+                <button onclick="applyCropAction()" class="flex-1 bg-blue-600 rounded-lg font-bold text-white text-xs">APPLY CROP</button>
+                <button onclick="closeCrop()" class="p-3 bg-red-600/20 text-red-500 rounded-lg"><i data-lucide="x"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Error Help Modal -->
+    <div id="cam-error-modal" class="fixed inset-0 z-[200] bg-slate-950/90 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-[#161c28] border border-white/10 w-full max-w-md rounded-2xl overflow-hidden flex flex-col shadow-2xl transition-all duration-300">
+            <header class="p-4 border-b border-white/10 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-widest text-red-400 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                    Camera Access Needed
+                </span>
+                <button onclick="closeCamError()" class="p-1.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </header>
+            <div class="p-6 space-y-4">
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                    <p class="text-[10px] uppercase font-black tracking-wider text-slate-400">Technical Diagnostic</p>
+                    <p id="cam-error-msg" class="text-xs font-mono text-red-300 mt-1 break-words">NotAllowedError: Permission denied</p>
+                </div>
+                
+                <h4 class="text-xs font-bold text-slate-200 uppercase tracking-widest">How to solve this in Chrome Mobile:</h4>
+                <ol class="space-y-3 text-xs text-slate-300 list-decimal pl-4">
+                    <li>
+                        <strong class="text-white">Grant Site Permission:</strong> Tap the <b class="text-blue-400">Lock / Adjust Icon</b> to the left of your Chrome URL address bar. Go to <strong class="text-white">Permissions / Site Settings</strong>, find <strong class="text-blue-400">Camera</strong> and select <strong class="text-white">Allow</strong>.
+                    </li>
+                    <li>
+                        <strong class="text-white">Check Android Settings:</strong> Go to Phone Settings ➔ Apps ➔ Chrome ➔ Permissions ➔ Camera ➔ select <strong class="text-white">Allow while using the app</strong>.
+                    </li>
+                    <li>
+                        <strong class="text-white">Connect via HTTPS:</strong> Make sure you are using a secure context. Camera is blocked on raw HTTP connections by modern mobile browsers.
+                    </li>
+                </ol>
+            </div>
+            <footer class="p-4 bg-slate-900 border-t border-white/5 flex flex-col gap-2">
+                <button onclick="triggerUploadFallback()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white rounded-xl shadow-lg shadow-emerald-500/20 transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    Upload or Capture from Gallery / গ্যালারি থেকে ছবি নিন
+                </button>
+                <div class="flex gap-2 w-full">
+                    <button onclick="closeCamError()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-xl transition-colors">Close</button>
+                    <button onclick="retryCamera()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white rounded-xl shadow-lg shadow-blue-500/20 transition-colors">Try Again</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 px-6 py-3 rounded-xl shadow-2xl text-[10px] font-black uppercase tracking-widest text-white z-[2000] transition-all transform translate-y-20 opacity-0 bg-blue-600"></div>
+
+    <script>
+        // --- CONSTANTS ---
+        const FILTERS = ['original', 'magic', 'enhance', 'threshold', 'grayscale'];
+
+        // --- STATE ---
+        let state = {
+            activeTab: 'cpr',
+            layout: 'portrait',
+            images: { '1': null, '2': null },
+            originals: { '1': null, '2': null },
+            filters: { '1': 'original', '2': 'original' },
+            perspPoints: [ {x:10, y:10}, {x:90, y:10}, {x:90, y:90}, {x:10, y:90} ]
+        };
+
+        let activeTarget = null, stream = null, cropper = null, activePoint = null;
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setTab('cpr');
+            updateUI();
+        });
+
+        // --- CORE UI ---
+        function setTab(t) {
+            state.activeTab = t;
+            
+            const tabCpr = document.getElementById('tab-cpr');
+            const tabPassport = document.getElementById('tab-passport');
+            
+            if (t === 'cpr') {
+                tabCpr.className = "px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white shadow-lg shadow-blue-500/20";
+                tabPassport.className = "px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-white";
+            } else {
+                tabCpr.className = "px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 text-slate-500 hover:text-white";
+                tabPassport.className = "px-2.5 md:px-6 py-1 md:py-1.5 text-[9px] md:text-xs font-black uppercase tracking-widest transition-all rounded-md flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white shadow-lg shadow-blue-500/20";
+            }
+            
+            document.getElementById('label-1').innerText = t === 'cpr' ? 'Side A / Page 1' : 'Top Page / Front';
+            document.getElementById('label-2').innerText = t === 'cpr' ? 'Side B / Page 2' : 'Bottom Page / Back';
+            
+            updateUI();
+        }
+
+        document.addEventListener('dragover', (e) => e.preventDefault());
+        document.addEventListener('drop', (e) => e.preventDefault());
+
+        // Enable Drag & Drop zones
+        [1, 2].forEach(id => {
+            const dz = document.getElementById('dz-' + id);
+            dz.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dz.classList.add('bg-blue-500/10', 'border-blue-500');
+            });
+            dz.addEventListener('dragleave', () => {
+                dz.classList.remove('bg-blue-500/10', 'border-blue-500');
+            });
+            dz.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dz.classList.remove('bg-blue-500/10', 'border-blue-500');
+                const file = e.dataTransfer.files[0];
+                if(file && file.type.startsWith('image/')) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    const fileInp = document.getElementById('file-' + id);
+                    fileInp.files = dt.files;
+                    handleFile(fileInp, id);
+                }
+            });
+        });
+
+        function setLayout(l) {
+            state.layout = l;
+            document.getElementById('btn-portrait').className = l === 'portrait' ? 'flex-1 px-4 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg' : 'flex-1 px-4 py-1.5 text-slate-500 rounded-lg text-xs font-bold transition-all';
+            document.getElementById('btn-landscape').className = l === 'landscape' ? 'flex-1 px-4 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-lg' : 'flex-1 px-4 py-1.5 text-slate-500 rounded-lg text-xs font-bold transition-all';
+            renderA4();
+        }
+
+        // --- IMAGE PROCESSING ---
+        function triggerFile(id) { activeTarget = id; document.getElementById('file-' + id).click(); }
+        
+        async function handleFile(inp, id) {
+            const file = inp.files[0];
+            if (!file) return;
+            showToast('Loading image...');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const raw = e.target.result;
+                state.originals[id] = raw;
+                
+                // Set original for immediate preview, but don't run OCR yet
+                state.images[id] = raw;
+                updateUI();
+
+                // Wait for crop or use raw
+                let final = raw;
+                try {
+                    const cropped = await smartAutoCrop(raw);
+                    if (cropped && cropped.length > 100) final = cropped;
+                } catch (err) {
+                    console.log("Auto-crop skipped:", err);
+                }
+                
+                setProcessedImage(id, final);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function setProcessedImage(id, url) {
+            state.images[id] = url;
+            updateUI();
+        }
+
+        function resetSlot(id) {
+            state.images[id] = null;
+            state.originals[id] = null;
+            state.filters[id] = 'original';
+            updateUI();
+        }
+
+        function updateUI() {
+            [1, 2].forEach(id => {
+                const empty = !state.images[id];
+                document.getElementById('placeholder-' + id).style.display = empty ? 'flex' : 'none';
+                document.getElementById('img-' + id).style.display = empty ? 'none' : 'block';
+                document.getElementById('img-' + id).src = state.images[id] || '';
+                
+                if (!empty) {
+                    renderFilters(id);
+                }
+            });
+            renderA4();
+        }
+
+        function renderFilters(id) {
+            const container = document.getElementById('filters-' + id);
+            container.innerHTML = FILTERS.map(f => {
+                const label = f === 'magic' ? 'Magic Color' : f === 'threshold' ? 'Thresholding' : f === 'grayscale' ? 'Grayscale' : f;
+                return `
+                    <button onclick="event.stopPropagation(); applyFilter('${id}', '${f}')" 
+                        class="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${state.filters[id] === f ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-black/40 border-white/10 text-white/40'}">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        async function applyFilter(id, f) {
+            state.filters[id] = f;
+            showToast(`Applying ${f}...`);
+            const filtered = await processFilter(state.originals[id], f);
+            const final = await smartAutoCrop(filtered);
+            setProcessedImage(id, final);
+        }
+
+        function processFilter(url, filter) {
+            return new Promise(res => {
+                if (filter === 'original') return res(url);
+                const img = new Image();
+                img.onload = () => {
+                    const c = document.createElement('canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = img.width; c.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const id = ctx.getImageData(0,0,c.width,c.height);
+                    const d = id.data;
+                    for(let i=0; i<d.length; i+=4) {
+                        const r=d[i], g=d[i+1], b=d[i+2];
+                        if (filter==='grayscale'||filter==='bw') {
+                            const gray = 0.299*r+0.587*g+0.114*b;
+                            if(filter==='bw') { const v = gray > 128 ? 255 : 0; d[i]=d[i+1]=d[i+2]=v; }
+                            else d[i]=d[i+1]=d[i+2]=gray;
+                        } else if (filter==='threshold') {
+                            const gray = 0.299*r+0.587*g+0.114*b;
+                            const v = gray > 138 ? 255 : 0;
+                            d[i]=d[i+1]=d[i+2]=v;
+                        } else if (filter==='magic'||filter==='enhance') {
+                            const f = filter==='magic' ? 1.55 : 1.25;
+                            let nr = (r - 128) * f + 128 + 15;
+                            let ng = (g - 128) * f + 128 + 15;
+                            let nb = (b - 128) * f + 128 + 15;
+                            if (nr > 185) nr = 185 + (nr - 185) * 1.35;
+                            if (ng > 185) ng = 185 + (ng - 185) * 1.35;
+                            if (nb > 185) nb = 185 + (nb - 185) * 1.35;
+                            d[i] = Math.max(0, Math.min(255, nr));
+                            d[i+1] = Math.max(0, Math.min(255, ng));
+                            d[i+2] = Math.max(0, Math.min(255, nb));
+                        }
+                    }
+                    ctx.putImageData(id,0,0);
+                    res(c.toDataURL('image/jpeg', 0.95));
+                };
+                img.onerror = () => res(url);
+                img.src = url;
+            });
+        }
+
+        function smartAutoCrop(url, padPercent = 0.01) {
+            return new Promise(res => {
+                const img = new Image();
+                img.onload = () => {
+                    const c = document.createElement('canvas');
+                    const ctx = c.getContext('2d');
+                    const s = 0.4;
+                    const w = Math.floor(img.width * s), h = Math.floor(img.height * s);
+                    c.width = w; c.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const pixels = ctx.getImageData(0,0,w,h).data;
+                    const gray = new Float32Array(w*h);
+                    for(let i=0; i<pixels.length; i+=4) gray[i/4] = (pixels[i]*0.299 + pixels[i+1]*0.587 + pixels[i+2]*0.114);
+
+                    const edges = new Float32Array(w*h);
+                    let maxE = 0;
+                    for(let y=1; y<h-1; y++) {
+                        for(let x=1; x<w-1; x++) {
+                            const idx = y*w+x;
+                            const gx = -1*gray[idx-w-1] + gray[idx-w+1] - 2*gray[idx-1] + 2*gray[idx+1] - gray[idx+w-1] + gray[idx+w+1];
+                            const gy = -1*gray[idx-w-1] - 2*gray[idx-w] - gray[idx-w+1] + gray[idx+w-1] + 2*gray[idx+w] + gray[idx+w+1];
+                            const m = Math.sqrt(gx*gx + gy*gy);
+                            edges[idx] = m; if(m>maxE) maxE = m;
+                        }
+                    }
+
+                    let minX=w, minY=h, maxX=0, maxY=0;
+                    const thr = maxE * 0.2;
+                    for(let y=0; y<h; y++) {
+                        for(let x=0; x<w; x++) {
+                            if(edges[y*w+x] > thr) {
+                                if(x<minX) minX=x; if(x>maxX) maxX=x;
+                                if(y<minY) minY=y; if(y>maxY) maxY=y;
+                            }
+                        }
+                    }
+                    if (maxX-minX < 100) return res(url);
+
+                    const boxW = maxX - minX;
+                    const boxH = maxY - minY;
+                    const padX = boxW * padPercent;
+                    const padY = boxH * padPercent;
+                    const fx = Math.max(0, (minX-padX)/s), fy = Math.max(0, (minY-padY)/s);
+                    const fw = Math.min(img.width, (maxX+padX)/s) - fx, fh = Math.min(img.height, (maxY+padY)/s) - fy;
+
+                    const cc = document.createElement('canvas'); cc.width = fw; cc.height = fh;
+                    cc.getContext('2d').drawImage(img, fx, fy, fw, fh, 0, 0, fw, fh);
+                    res(cc.toDataURL('image/jpeg', 0.92));
+                };
+                img.onerror = () => res(url);
+                img.src = url;
+            });
+        }
+
+        // --- PERSPECTIVE ---
+        function startPersp(id) {
+            activeTarget = id;
+            document.getElementById('persp-img').src = state.originals[id];
+            document.getElementById('persp-modal').classList.remove('hidden');
+            setTimeout(initPersp, 50);
+        }
+
+        function initPersp() {
+            const container = document.getElementById('handles-container');
+            container.innerHTML = '';
+            state.perspPoints.forEach((p, i) => {
+                const el = document.createElement('div');
+                el.className = 'corner-handle';
+                el.style.left = p.x + '%';
+                el.style.top = p.y + '%';
+                el.innerHTML = '<div class="corner-dot"></div>';
+                
+                el.onmousedown = (e) => activePoint = i;
+                el.ontouchstart = (e) => activePoint = i;
+                container.appendChild(el);
+            });
+            window.onmousemove = movePoint;
+            window.ontouchmove = movePoint;
+            window.onmouseup = () => activePoint = null;
+            window.ontouchend = () => activePoint = null;
+            drawPath();
+        }
+
+        function movePoint(e) {
+            if (activePoint === null) return;
+            const rect = document.getElementById('persp-img').getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+            const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+            state.perspPoints[activePoint] = { x, y };
+            const h = document.querySelectorAll('.corner-handle')[activePoint];
+            h.style.left = x + '%'; h.style.top = y + '%';
+            drawPath();
+        }
+
+        function drawPath() {
+            const rect = document.getElementById('persp-img').getBoundingClientRect();
+            const svgPts = state.perspPoints.map(p => `${(p.x/100)*rect.width},${(p.y/100)*rect.height}`).join(' ');
+            document.getElementById('persp-path').setAttribute('points', svgPts);
+        }
+
+        async function applyPersp() {
+            showToast('Correcting perspective...');
+            const img = new Image();
+            img.onload = () => {
+                const tw = state.activeTab === 'cpr' ? 856 : 1000, th = state.activeTab === 'cpr' ? 540 : 700;
+                const canvas = document.createElement('canvas'); canvas.width = tw; canvas.height = th;
+                const ctx = canvas.getContext('2d');
+                
+                const src = state.perspPoints.map(p => ({ x: (p.x/100)*img.width, y: (p.y/100)*img.height }));
+                const dst = [{x:0,y:0},{x:tw,y:0},{x:tw,y:th},{x:0,y:th}];
+                
+                const invH = solveHomography(dst, src);
+                const out = ctx.createImageData(tw, th);
+                const tc = document.createElement('canvas'); tc.width=img.width; tc.height=img.height;
+                const tctx = tc.getContext('2d'); tctx.drawImage(img,0,0);
+                const inD = tctx.getImageData(0,0,img.width,img.height).data;
+
+                for(let y=0; y<th; y++) {
+                    for(let x=0; x<tw; x++) {
+                        const w = invH[6]*x + invH[7]*y + invH[8];
+                        const sx = Math.floor((invH[0]*x + invH[1]*y + invH[2])/w);
+                        const sy = Math.floor((invH[3]*x + invH[4]*y + invH[5])/w);
+                        if(sx>=0 && sx<img.width && sy>=0 && sy<img.height) {
+                            const o=(y*tw+x)*4, i=(sy*img.width+sx)*4;
+                            out.data[o]=inD[i]; out.data[o+1]=inD[i+1]; out.data[o+2]=inD[i+2]; out.data[o+3]=inD[i+3];
+                        }
+                    }
+                }
+                ctx.putImageData(out,0,0);
+                setProcessedImage(activeTarget, canvas.toDataURL('image/jpeg', 0.95));
+                closePersp();
+            };
+            img.src = await processFilter(state.originals[activeTarget], state.filters[activeTarget]);
+        }
+
+        function solveHomography(src, dst) {
+            const A = [];
+            for (let i = 0; i < 4; i++) {
+                const { x, y } = src[i], { x: u, y: v } = dst[i];
+                A.push([x, y, 1, 0, 0, 0, -u*x, -u*y, u]);
+                A.push([0, 0, 0, x, y, 1, -v*x, -v*y, v]);
+            }
+            const M = A.map(r => [...r.slice(0, 8), -r[8]]);
+            for (let i = 0; i < 8; i++) {
+                let max = i; for(let j=i+1; j<8; j++) if(Math.abs(M[j][i]) > Math.abs(M[max][i])) max = j;
+                [M[i], M[max]] = [M[max], M[i]];
+                for(let j=i+1; j<8; j++) {
+                    const c = M[j][i]/M[i][i];
+                    for(let k=i; k<=8; k++) M[j][k] -= c*M[i][k];
+                }
+            }
+            const h = new Array(8);
+            for(let i=7; i>=0; i--) {
+                let s = 0; for(let j=i+1; j<8; j++) s+=M[i][j]*h[j];
+                h[i] = (M[i][8]-s)/M[i][i];
+            }
+            return [...h, 1];
+        }
+
+        function closePersp() { document.getElementById('persp-modal').classList.add('hidden'); }
+
+        // --- CROP ---
+        async function startCrop(id) {
+            activeTarget = id;
+            const original = state.originals[id] || state.images[id];
+            let preCropped = original;
+            try {
+                preCropped = await smartAutoCrop(original, 0.05);
+            } catch(e) {
+                console.log("Pre-crop error:", e);
+            }
+            document.getElementById('crop-img-el').src = preCropped;
+            document.getElementById('crop-modal').classList.remove('hidden');
+            setTimeout(() => {
+                cropper = new Cropper(document.getElementById('crop-img-el'), {
+                    viewMode: 1,
+                    autoCropArea: 0.90
+                });
+            }, 100);
+        }
+        function closeCrop() { if(cropper) cropper.destroy(); document.getElementById('crop-modal').classList.add('hidden'); }
+        function applyCropAction() { const c = cropper.getCroppedCanvas(); setProcessedImage(activeTarget, c.toDataURL('image/jpeg', 0.95)); closeCrop(); }
+
+        // --- CAMERA ---
+        let autoCropEnabled = true;
+        function toggleAutoCrop() {
+            autoCropEnabled = !autoCropEnabled;
+            const btn = document.getElementById('cam-autocrop-btn');
+            const pulse = document.getElementById('cam-autocrop-pulse');
+            const dot = document.getElementById('cam-autocrop-dot');
+            const text = document.getElementById('cam-autocrop-text');
+            const badge = document.getElementById('cam-active-badge');
+            
+            if (autoCropEnabled) {
+                btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-blue-600/20 border border-blue-500/50 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]";
+                pulse.classList.remove('hidden');
+                dot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500";
+                text.innerText = "Auto-Crop: ACTIVE";
+                badge.classList.remove('hidden');
+                showToast("Auto-Crop Active");
+            } else {
+                btn.className = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-slate-800/40 border border-slate-700 text-slate-400";
+                pulse.classList.add('hidden');
+                dot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-500";
+                text.innerText = "Auto-Crop: OFF";
+                badge.classList.add('hidden');
+                showToast("Auto-Crop Inactive");
+            }
+        }
+
+        async function toggleCam(id) {
+            activeTarget = id;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                const err = new Error("Camera API is not supported. Secure Context (HTTPS) is required on mobile browsers.");
+                err.name = "NotSupportedError";
+                showCamError(err);
+                return;
+            }
+            try {
+                // Try high quality environment-facing camera
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: { ideal: 1920 } } 
+                });
+            } catch(e) {
+                console.log("High-quality environment cam failed, trying medium quality...", e);
+                try {
+                    // Try medium quality environment-facing camera
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'environment' } 
+                    });
+                } catch(e2) {
+                    console.log("Environment camera failed, trying any available camera...", e2);
+                    try {
+                        // Try any camera
+                        stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: true 
+                        });
+                    } catch(e3) {
+                        console.error("Camera access failed completely:", e3);
+                        showCamError(e3);
+                        return;
+                    }
+                }
+            }
+
+            try {
+                document.getElementById('v').srcObject = stream;
+                document.getElementById('cam-modal').classList.remove('hidden');
+                // Ensure initial state UI is updated
+                if (!autoCropEnabled) {
+                    autoCropEnabled = true;
+                    toggleAutoCrop();
+                }
+            } catch(e) {
+                showToast('Camera Video Element Error', 'error');
+            }
+        }
+        function showCamError(err) {
+            const msgEl = document.getElementById('cam-error-msg');
+            if (msgEl) {
+                msgEl.innerText = `${err.name || "Error"}: ${err.message || "Permission denied, device not found, or insecure context."}`;
+            }
+            document.getElementById('cam-error-modal').classList.remove('hidden');
+        }
+        function closeCamError() {
+            document.getElementById('cam-error-modal').classList.add('hidden');
+        }
+        function retryCamera() {
+            closeCamError();
+            if (activeTarget) {
+                toggleCam(activeTarget);
+            }
+        }
+        function triggerUploadFallback() {
+            closeCamError();
+            if (activeTarget) {
+                const fileInput = document.getElementById(`file-${activeTarget}`);
+                if (fileInput) {
+                    fileInput.click();
+                }
+            }
+        }
+        function closeCam() { if(stream) stream.getTracks().forEach(t => t.stop()); document.getElementById('cam-modal').classList.add('hidden'); }
+        async function capture() {
+            const v = document.getElementById('v');
+            const c = document.createElement('canvas');
+            c.width = v.videoWidth; c.height = v.videoHeight;
+            c.getContext('2d').drawImage(v, 0, 0);
+            const raw = c.toDataURL('image/jpeg', 0.95);
+            state.originals[activeTarget] = raw;
+            setProcessedImage(activeTarget, raw);
+            closeCam();
+
+            if (autoCropEnabled) {
+                showToast('Smart cropping & scaling...');
+                try {
+                    const cropped = await smartAutoCrop(raw);
+                    if (cropped && cropped.length > 100) {
+                        setProcessedImage(activeTarget, cropped);
+                        showToast('Auto-cropped beautifully!', 'success');
+                    }
+                } catch (e) {
+                    console.log("Auto crop error:", e);
+                }
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Clear all images?')) {
+                state.images = { '1': null, '2': null };
+                state.originals = { '1': null, '2': null };
+                
+                updateUI();
+                showToast('Data cleared');
+            }
+        }
+
+        // --- EXPORT ---
+        function renderA4() {
+            const a4 = document.getElementById('a4'); a4.innerHTML = '';
+            a4.className = state.layout === 'landscape' ? 'landscape relative bg-white' : 'relative bg-white';
+            
+            const CW = 180, CH = 113, PW = 240, PH = 169;
+            const targets = [1, 2];
+
+            const content = document.createElement('div');
+            content.className = `flex flex-col items-center justify-center h-full p-4 gap-8`;
+            
+            targets.forEach(id => {
+                const slot = document.createElement('div');
+                slot.className = 'cslot shadow-sm border border-slate-200';
+                slot.style.width = state.activeTab === 'cpr' ? CW+'px' : PW+'px';
+                slot.style.height = state.activeTab === 'cpr' ? CH+'px' : PH+'px';
+                if(state.images[id]) {
+                    const img = document.createElement('img'); img.src = state.images[id];
+                    slot.appendChild(img);
+                }
+                content.appendChild(slot);
+            });
+
+            a4.appendChild(content);
+        }
+
+        async function generatePDF() {
+            const [s1, s2] = ['1', '2'];
+            const hasS1 = !!state.images[s1];
+            const hasS2 = !!state.images[s2];
+
+            if (!hasS1 && !hasS2) {
+                showToast("No images to download");
+                return;
+            }
+
+            showToast("Generating Premium PDF...");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ 
+                orientation: state.layout === 'landscape' ? 'landscape' : 'portrait', 
+                unit: 'mm', 
+                format: 'a4' 
+            });
+            const W = state.layout === 'landscape' ? 297 : 210;
+            const H = state.layout === 'landscape' ? 210 : 297;
+            
+            const cardW = state.activeTab === 'cpr' ? 85.6 : 125;
+            const cardH = state.activeTab === 'cpr' ? 54 : 88;
+            const gap = 8;
+
+            // Draw A4 Page Border
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.1);
+            doc.rect(2, 2, W - 4, H - 4);
+
+            // Add Watermark
+            doc.setTextColor(200, 200, 200);
+            doc.setFontSize(8);
+            doc.text("Smart ID Card Scanner - By Arif", W / 2, H - 7, { align: 'center' });
+
+            const sx = state.layout === 'landscape' ? (W - (cardW * 2 + gap)) / 2 : (W - cardW) / 2;
+            const sy = state.layout === 'landscape' ? (H - cardH) / 2 : (H - (cardH * 2 + gap)) / 2; 
+
+            const addRoundedImage = async (imgUrl, x, y, w, h) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                await new Promise(r => { img.onload = r; img.src = imgUrl; });
+                
+                const r = 3.5; // mm radius
+                
+                // Create a temporary canvas to pre-process the image (Crop + Round)
+                const pCanvas = document.createElement('canvas');
+                const pCtx = pCanvas.getContext('2d');
+                const pScale = 8; // high res for internal crop
+                pCanvas.width = w * pScale;
+                pCanvas.height = h * pScale;
+                const pR = r * pScale;
+
+                // Fill background white to avoid black corners in JPEG export from canvas
+                pCtx.fillStyle = '#ffffff';
+                pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
+                
+                pCtx.beginPath();
+                pCtx.roundRect(0, 0, pCanvas.width, pCanvas.height, pR);
+                pCtx.clip();
+                
+                // Draw fully (no zoom) to avoid cutting off card edges
+                pCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, pCanvas.width, pCanvas.height);
+                
+                // Draw 3D-effect shadow in PDF (Soft Multi-layer)
+                doc.setFillColor(240, 240, 240);
+                doc.roundedRect(x + 1.2, y + 1.5, w, h, r, r, 'F');
+                doc.setFillColor(220, 220, 220);
+                doc.roundedRect(x + 0.8, y + 1.2, w, h, r, r, 'F');
+
+                // Add processed image to PDF
+                const processedData = pCanvas.toDataURL('image/jpeg', 0.95);
+                doc.addImage(processedData, 'JPEG', x, y, w, h);
+                
+                // Stock border
+                doc.setDrawColor(150, 150, 150); 
+                doc.setLineWidth(0.3);
+                doc.roundedRect(x, y, w, h, r, r, 'D');
+            };
+
+            if (state.images[s1]) {
+                await addRoundedImage(state.images[s1], sx, sy, cardW, cardH);
+            }
+            if (state.images[s2]) {
+                const x = state.layout === 'landscape' ? sx + cardW + gap : sx;
+                const y = state.layout === 'landscape' ? sy : sy + cardH + gap;
+                await addRoundedImage(state.images[s2], x, y, cardW, cardH);
+            }
+            
+            const cleanTabName = state.activeTab === 'cpr' ? 'ID_Card' : 'Passport';
+            doc.save(`${cleanTabName}_Scan_by_Arif.pdf`);
+        }
+
+        async function generateJPG() {
+            const [s1, s2] = ['1', '2'];
+            const hasS1 = !!state.images[s1];
+            const hasS2 = !!state.images[s2];
+
+            if (!hasS1 && !hasS2) {
+                showToast("No images to download");
+                return;
+            }
+
+            showToast('Generating Ultra HD JPG...');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // Fixed A4 dimensions at high resolution
+            const scale = 12; 
+            const W_mm = state.layout === 'landscape' ? 297 : 210;
+            const H_mm = state.layout === 'landscape' ? 210 : 297;
+            
+            canvas.width = W_mm * scale;
+            canvas.height = H_mm * scale;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // A4 Page Border
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 0.5 * scale;
+            ctx.strokeRect(5 * scale, 5 * scale, canvas.width - 10 * scale, canvas.height - 10 * scale);
+
+            // Watermark
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = `bold ${8 * scale}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText("Smart ID Card Scanner - By Arif", canvas.width / 2, canvas.height - 8 * scale);
+
+            const cardW_mm = state.activeTab === 'cpr' ? 85.6 : 125;
+            const cardH_mm = state.activeTab === 'cpr' ? 54 : 88;
+            const gap_mm = 10;
+
+            const cardW = cardW_mm * scale;
+            const cardH = cardH_mm * scale;
+            const gap = gap_mm * scale;
+
+            const sx = state.layout === 'landscape' ? (canvas.width - (cardW * 2 + gap)) / 2 : (canvas.width - cardW) / 2;
+            const sy = state.layout === 'landscape' ? (canvas.height - cardH) / 2 : (canvas.height - (cardH * 2 + gap)) / 2; 
+
+            const drawCard = async (imgUrl, x, y) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                await new Promise(r => { img.onload = r; img.src = imgUrl; });
+                const r = 3.5 * scale;
+
+                ctx.save();
+                
+                // Drop Shadow for high-end 3D feel
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 12 * scale;
+                ctx.shadowOffsetX = 3 * scale;
+                ctx.shadowOffsetY = 6 * scale;
+                
+                // Rounded card path
+                ctx.beginPath();
+                ctx.roundRect(x, y, cardW, cardH, r);
+                
+                // Background
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                
+                // Clip image to rounded corners & Crop margins
+                ctx.save();
+                ctx.clip();
+                
+                // Draw fully (no zoom) to avoid cutting off card edges
+                ctx.drawImage(img, 0, 0, img.width, img.height, x, y, cardW, cardH);
+                ctx.restore();
+                
+                // Stock border
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#94a3b8'; 
+                ctx.lineWidth = 0.6 * scale;
+                ctx.beginPath();
+                ctx.roundRect(x, y, cardW, cardH, r);
+                ctx.stroke();
+
+                ctx.restore();
+            };
+
+            if (hasS1) {
+                await drawCard(state.images[s1], sx, sy);
+            }
+
+            if (hasS2) {
+                const xOffset = state.layout === 'landscape' ? sx + cardW + gap : sx;
+                const yOffset = state.layout === 'landscape' ? sy : sy + cardH + gap;
+                await drawCard(state.images[s2], xOffset, yOffset);
+            }
+
+            const cleanTabName = state.activeTab === 'cpr' ? 'ID_Card' : 'Passport';
+            const link = document.createElement('a');
+            link.download = `${cleanTabName}_Scan_by_Arif.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m;
+            t.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-xl shadow-2xl text-[10px] font-black uppercase tracking-widest text-white z-[2000] bg-blue-600 transition-all opacity-100 translate-y-0';
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(20px)'; }, 3000);
+        }
+    </script>
+</body>
+  </html>
