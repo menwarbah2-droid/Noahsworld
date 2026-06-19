@@ -1,12 +1,313 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BenefitPay QR Generator - Desktop Offline app</title>
-  <!-- Tailwind Dynamic Jingo Play CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Embedded Live QR Generator Library (No Internet required) -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Benefit QR Pro</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --border: #e3e5e9;
+    --text: #1e2330;
+    --muted: #8c94a0;
+    --accent: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .app-header .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .app-header h1 {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+  .app-header .credit {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .app-header .logo-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    margin-right: 2px;
+  }
+
+  .app-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .sidebar {
+    width: 380px;
+    flex-shrink: 0;
+    padding: 18px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    min-height: calc(100vh - 60px);
+  }
+
+  .preview-pane {
+    flex: 1;
+    padding: 24px 18px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .canvas-wrap {
+    width: 100%;
+    max-width: 440px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(20, 25, 35, 0.10);
+    background: #fff;
+  }
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .download-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 440px;
+    margin-top: 16px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    font-size: 16px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fbfbfc;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .field-hint {
+    margin-top: 5px;
+    font-size: 12.5px;
+    min-height: 16px;
+  }
+  .hint-ok { color: #1a8a4c; }
+  .hint-error { color: #c81e1e; }
+
+  .field-row {
+    display: flex;
+    gap: 10px;
+  }
+  .field-row .field { flex: 1; }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--muted);
+    margin: 18px 0 8px;
+  }
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .theme-swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+  }
+  .theme-swatch.active {
+    border-color: #1e2330;
+  }
+  .theme-swatch.active::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .layout-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .layout-btn {
+    padding: 10px 4px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border: 1.5px solid var(--border);
+    background: #fbfbfc;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .layout-btn.active {
+    border-color: var(--accent);
+    background: #fdeded;
+    color: var(--accent);
+  }
+
+  .btn {
+    flex: 1;
+    padding: 13px 10px;
+    font-size: 14.5px;
+    font-weight: 700;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: #1e2330; color: #fff; }
+  .btn-reset {
+    width: 100%;
+    margin-top: 18px;
+    padding: 11px;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* ---- Mobile responsive ---- */
+  @media (max-width: 860px) {
+    .app-main { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      min-height: auto;
+    }
+    .preview-pane { padding: 20px 16px 50px; }
+    .app-header h1 { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <h1><span class="logo-dot"></span>Benefit QR Pro</h1>
+      <span class="credit">by Arif</span>
+    </div>
+  </header>
+
+  <div class="app-main">
+    <aside class="sidebar">
+
+      <div class="field">
+        <label for="accountName">Account / Business Name</label>
+        <input type="text" id="accountName" value="Your Business Name" maxlength="40">
+      </div>
+
+      <div class="field">
+        <label for="accountInput">IBAN অথবা Mobile Number</label>
+        <input type="text" id="accountInput" value="BH12BENF00001234567890" maxlength="34" autocomplete="off" autocapitalize="characters">
+        <div class="field-hint" id="accountHint"></div>
+      </div>
+
+      <div class="field">
+        <label for="bankName">Bank Name</label>
+        <input type="text" id="bankName" value="Your Bank Name" maxlength="40">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="amount">Amount (BHD) — optional</label>
+          <input type="text" id="amount" value="" placeholder="0.000" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="reference">Note — optional</label>
+          <input type="text" id="reference" value="" placeholder="e.g. Table 5" maxlength="24">
+        </div>
+      </div>
+
+      <div class="section-label">Theme Color</div>
+      <div class="theme-grid" id="themeGrid"></div>
+
+      <div class="section-label">Print Layout</div>
+      <div class="layout-grid" id="layoutGrid"></div>
+
+      <button class="btn-reset" id="resetBtn">Reset to Default</button>
+
+    </aside>
+
+    <main class="preview-pane">
+      <div class="canvas-wrap">
+        <canvas id="sheetCanvas"></canvas>
+      </div>
+      <div class="download-row">
+        <button class="btn btn-secondary" id="downloadJpgBtn">Download JPG</button>
+        <button class="btn btn-primary" id="downloadPdfBtn">Download PDF</button>
+      </div>
+    </main>
+
+  </div>
+
   <script>
     //---------------------------------------------------------------------
 //
@@ -409,9 +710,6 @@ var qrcode = function() {
       case 'Byte' :
         newData = qr8BitByte(data);
         break;
-      case 'Kanji' :
-        newData = qrKanji(data);
-        break;
       default :
         throw 'mode:' + mode;
       }
@@ -462,270 +760,6 @@ var qrcode = function() {
       makeImpl(false, getBestMaskPattern() );
     };
 
-    _this.createTableTag = function(cellSize, margin) {
-
-      cellSize = cellSize || 2;
-      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
-
-      var qrHtml = '';
-
-      qrHtml += '<table style="';
-      qrHtml += ' border-width: 0px; border-style: none;';
-      qrHtml += ' border-collapse: collapse;';
-      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
-      qrHtml += '">';
-      qrHtml += '<tbody>';
-
-      for (var r = 0; r < _this.getModuleCount(); r += 1) {
-
-        qrHtml += '<tr>';
-
-        for (var c = 0; c < _this.getModuleCount(); c += 1) {
-          qrHtml += '<td style="';
-          qrHtml += ' border-width: 0px; border-style: none;';
-          qrHtml += ' border-collapse: collapse;';
-          qrHtml += ' padding: 0px; margin: 0px;';
-          qrHtml += ' width: ' + cellSize + 'px;';
-          qrHtml += ' height: ' + cellSize + 'px;';
-          qrHtml += ' background-color: ';
-          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
-          qrHtml += ';';
-          qrHtml += '"/>';
-        }
-
-        qrHtml += '</tr>';
-      }
-
-      qrHtml += '</tbody>';
-      qrHtml += '</table>';
-
-      return qrHtml;
-    };
-
-    _this.createSvgTag = function(cellSize, margin, alt, title) {
-
-      var opts = {};
-      if (typeof arguments[0] == 'object') {
-        // Called by options.
-        opts = arguments[0];
-        // overwrite cellSize and margin.
-        cellSize = opts.cellSize;
-        margin = opts.margin;
-        alt = opts.alt;
-        title = opts.title;
-      }
-
-      cellSize = cellSize || 2;
-      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
-
-      // Compose alt property surrogate
-      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
-      alt.text = alt.text || null;
-      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
-
-      // Compose title property surrogate
-      title = (typeof title === 'string') ? {text: title} : title || {};
-      title.text = title.text || null;
-      title.id = (title.text) ? title.id || 'qrcode-title' : null;
-
-      var size = _this.getModuleCount() * cellSize + margin * 2;
-      var c, mc, r, mr, qrSvg='', rect;
-
-      rect = 'l' + cellSize + ',0 0,' + cellSize +
-        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
-
-      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
-      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
-      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
-      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
-      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
-          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
-      qrSvg += '>';
-      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
-          escapeXml(title.text) + '</title>' : '';
-      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
-          escapeXml(alt.text) + '</description>' : '';
-      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
-      qrSvg += '<path d="';
-
-      for (r = 0; r < _this.getModuleCount(); r += 1) {
-        mr = r * cellSize + margin;
-        for (c = 0; c < _this.getModuleCount(); c += 1) {
-          if (_this.isDark(r, c) ) {
-            mc = c*cellSize+margin;
-            qrSvg += 'M' + mc + ',' + mr + rect;
-          }
-        }
-      }
-
-      qrSvg += '" stroke="transparent" fill="black"/>';
-      qrSvg += '</svg>';
-
-      return qrSvg;
-    };
-
-    _this.createDataURL = function(cellSize, margin) {
-
-      cellSize = cellSize || 2;
-      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
-
-      var size = _this.getModuleCount() * cellSize + margin * 2;
-      var min = margin;
-      var max = size - margin;
-
-      return createDataURL(size, size, function(x, y) {
-        if (min <= x && x < max && min <= y && y < max) {
-          var c = Math.floor( (x - min) / cellSize);
-          var r = Math.floor( (y - min) / cellSize);
-          return _this.isDark(r, c)? 0 : 1;
-        } else {
-          return 1;
-        }
-      } );
-    };
-
-    _this.createImgTag = function(cellSize, margin, alt) {
-
-      cellSize = cellSize || 2;
-      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
-
-      var size = _this.getModuleCount() * cellSize + margin * 2;
-
-      var img = '';
-      img += '<img';
-      img += '\u0020src="';
-      img += _this.createDataURL(cellSize, margin);
-      img += '"';
-      img += '\u0020width="';
-      img += size;
-      img += '"';
-      img += '\u0020height="';
-      img += size;
-      img += '"';
-      if (alt) {
-        img += '\u0020alt="';
-        img += escapeXml(alt);
-        img += '"';
-      }
-      img += '/>';
-
-      return img;
-    };
-
-    var escapeXml = function(s) {
-      var escaped = '';
-      for (var i = 0; i < s.length; i += 1) {
-        var c = s.charAt(i);
-        switch(c) {
-        case '<': escaped += '&lt;'; break;
-        case '>': escaped += '&gt;'; break;
-        case '&': escaped += '&amp;'; break;
-        case '"': escaped += '&quot;'; break;
-        default : escaped += c; break;
-        }
-      }
-      return escaped;
-    };
-
-    var _createHalfASCII = function(margin) {
-      var cellSize = 1;
-      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
-
-      var size = _this.getModuleCount() * cellSize + margin * 2;
-      var min = margin;
-      var max = size - margin;
-
-      var y, x, r1, r2, p;
-
-      var blocks = {
-        '██': '█',
-        '█ ': '▀',
-        ' █': '▄',
-        '  ': ' '
-      };
-
-      var blocksLastLineNoMargin = {
-        '██': '▀',
-        '█ ': '▀',
-        ' █': ' ',
-        '  ': ' '
-      };
-
-      var ascii = '';
-      for (y = 0; y < size; y += 2) {
-        r1 = Math.floor((y - min) / cellSize);
-        r2 = Math.floor((y + 1 - min) / cellSize);
-        for (x = 0; x < size; x += 1) {
-          p = '█';
-
-          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
-            p = ' ';
-          }
-
-          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
-            p += ' ';
-          }
-          else {
-            p += '█';
-          }
-
-          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
-          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
-        }
-
-        ascii += '\n';
-      }
-
-      if (size % 2 && margin > 0) {
-        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
-      }
-
-      return ascii.substring(0, ascii.length-1);
-    };
-
-    _this.createASCII = function(cellSize, margin) {
-      cellSize = cellSize || 1;
-
-      if (cellSize < 2) {
-        return _createHalfASCII(margin);
-      }
-
-      cellSize -= 1;
-      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
-
-      var size = _this.getModuleCount() * cellSize + margin * 2;
-      var min = margin;
-      var max = size - margin;
-
-      var y, x, r, p;
-
-      var white = Array(cellSize+1).join('██');
-      var black = Array(cellSize+1).join('  ');
-
-      var ascii = '';
-      var line = '';
-      for (y = 0; y < size; y += 1) {
-        r = Math.floor( (y - min) / cellSize);
-        line = '';
-        for (x = 0; x < size; x += 1) {
-          p = 1;
-
-          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
-            p = 0;
-          }
-
-          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
-          line += p ? white : black;
-        }
-
-        for (r = 0; r < cellSize; r += 1) {
-          ascii += line + '\n';
-        }
-      }
-
-      return ascii.substring(0, ascii.length-1);
-    };
-
     _this.renderTo2dContext = function(context, cellSize) {
       cellSize = cellSize || 2;
       var length = _this.getModuleCount();
@@ -757,75 +791,6 @@ var qrcode = function() {
 
   qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
 
-  //---------------------------------------------------------------------
-  // qrcode.createStringToBytes
-  //---------------------------------------------------------------------
-
-  /**
-   * @param unicodeData base64 string of byte array.
-   * [16bit Unicode],[16bit Bytes], ...
-   * @param numChars
-   */
-  qrcode.createStringToBytes = function(unicodeData, numChars) {
-
-    // create conversion map.
-
-    var unicodeMap = function() {
-
-      var bin = base64DecodeInputStream(unicodeData);
-      var read = function() {
-        var b = bin.read();
-        if (b == -1) throw 'eof';
-        return b;
-      };
-
-      var count = 0;
-      var unicodeMap = {};
-      while (true) {
-        var b0 = bin.read();
-        if (b0 == -1) break;
-        var b1 = read();
-        var b2 = read();
-        var b3 = read();
-        var k = String.fromCharCode( (b0 << 8) | b1);
-        var v = (b2 << 8) | b3;
-        unicodeMap[k] = v;
-        count += 1;
-      }
-      if (count != numChars) {
-        throw count + ' != ' + numChars;
-      }
-
-      return unicodeMap;
-    }();
-
-    var unknownChar = '?'.charCodeAt(0);
-
-    return function(s) {
-      var bytes = [];
-      for (var i = 0; i < s.length; i += 1) {
-        var c = s.charCodeAt(i);
-        if (c < 128) {
-          bytes.push(c);
-        } else {
-          var b = unicodeMap[s.charAt(i)];
-          if (typeof b == 'number') {
-            if ( (b & 0xff) == b) {
-              // 1byte
-              bytes.push(b);
-            } else {
-              // 2bytes
-              bytes.push(b >>> 8);
-              bytes.push(b & 0xff);
-            }
-          } else {
-            bytes.push(unknownChar);
-          }
-        }
-      }
-      return bytes;
-    };
-  };
 
   //---------------------------------------------------------------------
   // QRMode
@@ -1760,1036 +1725,618 @@ var qrcode = function() {
   };
 
   //---------------------------------------------------------------------
-  // qrKanji
-  //---------------------------------------------------------------------
-
-  var qrKanji = function(data) {
-
-    var _mode = QRMode.MODE_KANJI;
-    var _data = data;
-
-    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
-    if (!stringToBytes) {
-      throw 'sjis not supported.';
-    }
-    !function(c, code) {
-      // self test for sjis support.
-      var test = stringToBytes(c);
-      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
-        throw 'sjis not supported.';
-      }
-    }('\u53cb', 0x9746);
-
-    var _bytes = stringToBytes(data);
-
-    var _this = {};
-
-    _this.getMode = function() {
-      return _mode;
-    };
-
-    _this.getLength = function(buffer) {
-      return ~~(_bytes.length / 2);
-    };
-
-    _this.write = function(buffer) {
-
-      var data = _bytes;
-
-      var i = 0;
-
-      while (i + 1 < data.length) {
-
-        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
-
-        if (0x8140 <= c && c <= 0x9FFC) {
-          c -= 0x8140;
-        } else if (0xE040 <= c && c <= 0xEBBF) {
-          c -= 0xC140;
-        } else {
-          throw 'illegal char at ' + (i + 1) + '/' + c;
-        }
-
-        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
-
-        buffer.put(c, 13);
-
-        i += 2;
-      }
-
-      if (i < data.length) {
-        throw 'illegal char at ' + (i + 1);
-      }
-    };
-
-    return _this;
-  };
-
-  //=====================================================================
-  // GIF Support etc.
-  //
-
-  //---------------------------------------------------------------------
-  // byteArrayOutputStream
-  //---------------------------------------------------------------------
-
-  var byteArrayOutputStream = function() {
-
-    var _bytes = [];
-
-    var _this = {};
-
-    _this.writeByte = function(b) {
-      _bytes.push(b & 0xff);
-    };
-
-    _this.writeShort = function(i) {
-      _this.writeByte(i);
-      _this.writeByte(i >>> 8);
-    };
-
-    _this.writeBytes = function(b, off, len) {
-      off = off || 0;
-      len = len || b.length;
-      for (var i = 0; i < len; i += 1) {
-        _this.writeByte(b[i + off]);
-      }
-    };
-
-    _this.writeString = function(s) {
-      for (var i = 0; i < s.length; i += 1) {
-        _this.writeByte(s.charCodeAt(i) );
-      }
-    };
-
-    _this.toByteArray = function() {
-      return _bytes;
-    };
-
-    _this.toString = function() {
-      var s = '';
-      s += '[';
-      for (var i = 0; i < _bytes.length; i += 1) {
-        if (i > 0) {
-          s += ',';
-        }
-        s += _bytes[i];
-      }
-      s += ']';
-      return s;
-    };
-
-    return _this;
-  };
-
-  //---------------------------------------------------------------------
-  // base64EncodeOutputStream
-  //---------------------------------------------------------------------
-
-  var base64EncodeOutputStream = function() {
-
-    var _buffer = 0;
-    var _buflen = 0;
-    var _length = 0;
-    var _base64 = '';
-
-    var _this = {};
-
-    var writeEncoded = function(b) {
-      _base64 += String.fromCharCode(encode(b & 0x3f) );
-    };
-
-    var encode = function(n) {
-      if (n < 0) {
-        // error.
-      } else if (n < 26) {
-        return 0x41 + n;
-      } else if (n < 52) {
-        return 0x61 + (n - 26);
-      } else if (n < 62) {
-        return 0x30 + (n - 52);
-      } else if (n == 62) {
-        return 0x2b;
-      } else if (n == 63) {
-        return 0x2f;
-      }
-      throw 'n:' + n;
-    };
-
-    _this.writeByte = function(n) {
-
-      _buffer = (_buffer << 8) | (n & 0xff);
-      _buflen += 8;
-      _length += 1;
-
-      while (_buflen >= 6) {
-        writeEncoded(_buffer >>> (_buflen - 6) );
-        _buflen -= 6;
-      }
-    };
-
-    _this.flush = function() {
-
-      if (_buflen > 0) {
-        writeEncoded(_buffer << (6 - _buflen) );
-        _buffer = 0;
-        _buflen = 0;
-      }
-
-      if (_length % 3 != 0) {
-        // padding
-        var padlen = 3 - _length % 3;
-        for (var i = 0; i < padlen; i += 1) {
-          _base64 += '=';
-        }
-      }
-    };
-
-    _this.toString = function() {
-      return _base64;
-    };
-
-    return _this;
-  };
-
-  //---------------------------------------------------------------------
-  // base64DecodeInputStream
-  //---------------------------------------------------------------------
-
-  var base64DecodeInputStream = function(str) {
-
-    var _str = str;
-    var _pos = 0;
-    var _buffer = 0;
-    var _buflen = 0;
-
-    var _this = {};
-
-    _this.read = function() {
-
-      while (_buflen < 8) {
-
-        if (_pos >= _str.length) {
-          if (_buflen == 0) {
-            return -1;
-          }
-          throw 'unexpected end of file./' + _buflen;
-        }
-
-        var c = _str.charAt(_pos);
-        _pos += 1;
-
-        if (c == '=') {
-          _buflen = 0;
-          return -1;
-        } else if (c.match(/^\s$/) ) {
-          // ignore if whitespace.
-          continue;
-        }
-
-        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
-        _buflen += 6;
-      }
-
-      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
-      _buflen -= 8;
-      return n;
-    };
-
-    var decode = function(c) {
-      if (0x41 <= c && c <= 0x5a) {
-        return c - 0x41;
-      } else if (0x61 <= c && c <= 0x7a) {
-        return c - 0x61 + 26;
-      } else if (0x30 <= c && c <= 0x39) {
-        return c - 0x30 + 52;
-      } else if (c == 0x2b) {
-        return 62;
-      } else if (c == 0x2f) {
-        return 63;
-      } else {
-        throw 'c:' + c;
-      }
-    };
-
-    return _this;
-  };
-
-  //---------------------------------------------------------------------
-  // gifImage (B/W)
-  //---------------------------------------------------------------------
-
-  var gifImage = function(width, height) {
-
-    var _width = width;
-    var _height = height;
-    var _data = new Array(width * height);
-
-    var _this = {};
-
-    _this.setPixel = function(x, y, pixel) {
-      _data[y * _width + x] = pixel;
-    };
-
-    _this.write = function(out) {
-
-      //---------------------------------
-      // GIF Signature
-
-      out.writeString('GIF87a');
-
-      //---------------------------------
-      // Screen Descriptor
-
-      out.writeShort(_width);
-      out.writeShort(_height);
-
-      out.writeByte(0x80); // 2bit
-      out.writeByte(0);
-      out.writeByte(0);
-
-      //---------------------------------
-      // Global Color Map
-
-      // black
-      out.writeByte(0x00);
-      out.writeByte(0x00);
-      out.writeByte(0x00);
-
-      // white
-      out.writeByte(0xff);
-      out.writeByte(0xff);
-      out.writeByte(0xff);
-
-      //---------------------------------
-      // Image Descriptor
-
-      out.writeString(',');
-      out.writeShort(0);
-      out.writeShort(0);
-      out.writeShort(_width);
-      out.writeShort(_height);
-      out.writeByte(0);
-
-      //---------------------------------
-      // Local Color Map
-
-      //---------------------------------
-      // Raster Data
-
-      var lzwMinCodeSize = 2;
-      var raster = getLZWRaster(lzwMinCodeSize);
-
-      out.writeByte(lzwMinCodeSize);
-
-      var offset = 0;
-
-      while (raster.length - offset > 255) {
-        out.writeByte(255);
-        out.writeBytes(raster, offset, 255);
-        offset += 255;
-      }
-
-      out.writeByte(raster.length - offset);
-      out.writeBytes(raster, offset, raster.length - offset);
-      out.writeByte(0x00);
-
-      //---------------------------------
-      // GIF Terminator
-      out.writeString(';');
-    };
-
-    var bitOutputStream = function(out) {
-
-      var _out = out;
-      var _bitLength = 0;
-      var _bitBuffer = 0;
-
-      var _this = {};
-
-      _this.write = function(data, length) {
-
-        if ( (data >>> length) != 0) {
-          throw 'length over';
-        }
-
-        while (_bitLength + length >= 8) {
-          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
-          length -= (8 - _bitLength);
-          data >>>= (8 - _bitLength);
-          _bitBuffer = 0;
-          _bitLength = 0;
-        }
-
-        _bitBuffer = (data << _bitLength) | _bitBuffer;
-        _bitLength = _bitLength + length;
-      };
-
-      _this.flush = function() {
-        if (_bitLength > 0) {
-          _out.writeByte(_bitBuffer);
-        }
-      };
-
-      return _this;
-    };
-
-    var getLZWRaster = function(lzwMinCodeSize) {
-
-      var clearCode = 1 << lzwMinCodeSize;
-      var endCode = (1 << lzwMinCodeSize) + 1;
-      var bitLength = lzwMinCodeSize + 1;
-
-      // Setup LZWTable
-      var table = lzwTable();
-
-      for (var i = 0; i < clearCode; i += 1) {
-        table.add(String.fromCharCode(i) );
-      }
-      table.add(String.fromCharCode(clearCode) );
-      table.add(String.fromCharCode(endCode) );
-
-      var byteOut = byteArrayOutputStream();
-      var bitOut = bitOutputStream(byteOut);
-
-      // clear code
-      bitOut.write(clearCode, bitLength);
-
-      var dataIndex = 0;
-
-      var s = String.fromCharCode(_data[dataIndex]);
-      dataIndex += 1;
-
-      while (dataIndex < _data.length) {
-
-        var c = String.fromCharCode(_data[dataIndex]);
-        dataIndex += 1;
-
-        if (table.contains(s + c) ) {
-
-          s = s + c;
-
-        } else {
-
-          bitOut.write(table.indexOf(s), bitLength);
-
-          if (table.size() < 0xfff) {
-
-            if (table.size() == (1 << bitLength) ) {
-              bitLength += 1;
-            }
-
-            table.add(s + c);
-          }
-
-          s = c;
-        }
-      }
-
-      bitOut.write(table.indexOf(s), bitLength);
-
-      // end code
-      bitOut.write(endCode, bitLength);
-
-      bitOut.flush();
-
-      return byteOut.toByteArray();
-    };
-
-    var lzwTable = function() {
-
-      var _map = {};
-      var _size = 0;
-
-      var _this = {};
-
-      _this.add = function(key) {
-        if (_this.contains(key) ) {
-          throw 'dup key:' + key;
-        }
-        _map[key] = _size;
-        _size += 1;
-      };
-
-      _this.size = function() {
-        return _size;
-      };
-
-      _this.indexOf = function(key) {
-        return _map[key];
-      };
-
-      _this.contains = function(key) {
-        return typeof _map[key] != 'undefined';
-      };
-
-      return _this;
-    };
-
-    return _this;
-  };
-
-  var createDataURL = function(width, height, getPixel) {
-    var gif = gifImage(width, height);
-    for (var y = 0; y < height; y += 1) {
-      for (var x = 0; x < width; x += 1) {
-        gif.setPixel(x, y, getPixel(x, y) );
-      }
-    }
-
-    var b = byteArrayOutputStream();
-    gif.write(b);
-
-    var base64 = base64EncodeOutputStream();
-    var bytes = b.toByteArray();
-    for (var i = 0; i < bytes.length; i += 1) {
-      base64.writeByte(bytes[i]);
-    }
-    base64.flush();
-
-    return 'data:image/gif;base64,' + base64;
-  };
-
-  //---------------------------------------------------------------------
   // returns qrcode function.
 
   return qrcode;
 }();
 
-// multibyte support
-!function() {
-
-  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
-    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
-    function toUTF8Array(str) {
-      var utf8 = [];
-      for (var i=0; i < str.length; i++) {
-        var charcode = str.charCodeAt(i);
-        if (charcode < 0x80) utf8.push(charcode);
-        else if (charcode < 0x800) {
-          utf8.push(0xc0 | (charcode >> 6),
-              0x80 | (charcode & 0x3f));
-        }
-        else if (charcode < 0xd800 || charcode >= 0xe000) {
-          utf8.push(0xe0 | (charcode >> 12),
-              0x80 | ((charcode>>6) & 0x3f),
-              0x80 | (charcode & 0x3f));
-        }
-        // surrogate pair
-        else {
-          i++;
-          // UTF-16 encodes 0x10000-0x10FFFF by
-          // subtracting 0x10000 and splitting the
-          // 20 bits of 0x0-0xFFFFF into two halves
-          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
-            | (str.charCodeAt(i) & 0x3ff));
-          utf8.push(0xf0 | (charcode >>18),
-              0x80 | ((charcode>>12) & 0x3f),
-              0x80 | ((charcode>>6) & 0x3f),
-              0x80 | (charcode & 0x3f));
-        }
-      }
-      return utf8;
-    }
-    return toUTF8Array(s);
-  };
-
-}();
-
-(function (factory) {
-  if (typeof define === 'function' && define.amd) {
-      define([], factory);
-  } else if (typeof exports === 'object') {
-      module.exports = factory();
-  }
-}(function () {
-    return qrcode;
-}));
 
   </script>
-  
-  <!-- Font setup -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-      body {
-        background-color: white !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      .print-area {
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-      }
-      .page-break {
-        page-break-after: always;
-      }
-    }
-  </style>
-</head>
-<body class="h-full flex flex-col overflow-hidden text-slate-800">
-
-  <!-- Header bar -->
-  <header class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shadow-md no-print shrink-0">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white font-black text-xl italic shadow-md">B</div>
-      <div>
-        <h1 class="text-md font-extrabold tracking-tight">Benefit QR Pro <span class="bg-red-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1.5 uppercase">Offline Standalone</span> <span class="bg-slate-800 text-[9px] text-slate-300 px-2 py-0.5 rounded font-black tracking-wider border border-slate-700 ml-1.5">Design by Arif</span></h1>
-        <p class="text-[10px] text-slate-400">সম্পূর্ণ অফলাইন সংস্করন - ইন্টারনেট ছাড়া যেকোনো ব্রাউজারে চলবে</p>
-      </div>
-    </div>
-    
-    <div class="flex items-center gap-3">
-      <span class="flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 px-2.5 py-1 rounded-full font-mono font-bold">
-        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-        OFFLINE READY
-      </span>
-      <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-bold rounded-lg transition shadow-md shadow-red-600/20 flex items-center gap-1.5 cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-        Print A4 Paper
-      </button>
-    </div>
-  </header>
-
-  <!-- Workspace split -->
-  <main class="flex-1 flex overflow-hidden">
-    
-    <!-- Left interactive controller (form) -->
-    <section class="w-96 bg-white border-r border-slate-200 p-6 overflow-y-auto no-print space-y-6 flex flex-col justify-between shrink-0">
-      
-      <div class="space-y-6">
-        <!-- Account Details card -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Account Credentials</h2>
-            <button onclick="resetDefaults()" class="text-[10px] text-red-600 font-bold hover:underline">Reset</button>
-          </div>
-          
-          <div class="space-y-3">
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">RECIPIENT / MERCHANT NAME</label>
-              <input type="text" id="accountName" value="NOAH 24 MARKET WLL" oninput="updateQR()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition" placeholder="e.g. NOAH 24 MARKET WLL">
-            </div>
-
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">PAYMENT ROUTE TYPE</label>
-              <select id="paymentType" onchange="toggleInputs(); updateQR();" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer">
-                <option value="iban" selected>Bahrain IBAN Only</option>
-                <option value="mobile" >BenefitPay Mobile No.</option>
-              </select>
-            </div>
-
-            <div id="ibanBox">
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">BAHRAIN IBAN (22 CHARS)</label>
-              <input type="text" id="iban" value="BH12BENEF000012345678" oninput="updateQR()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition" placeholder="BH12 BENEF 0000 1234 5678">
-            </div>
-
-            <div id="mobileBox">
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">MOBILE NUMBER (8 DIGITS)</label>
-              <input type="text" id="mobile" value="39123456" oninput="updateQR()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition" placeholder="e.g. 39123456">
-            </div>
-            
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">BANK NAME</label>
-              <input type="text" id="bankName" value="Bank of Bahrain and Kuwait (BBK)" oninput="updateQR()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none" placeholder="e.g. Bank of Bahrain and Kuwait">
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Design and Layout chooser -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Design & Grid Setup</h2>
-          </div>
-          
-          <div class="space-y-3">
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">THEME STYLES</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="setTheme('#DC2626', 'vibrant-pro')" class="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left flex items-center gap-2 cursor-pointer text-xs font-semibold">
-                  <span class="w-4 h-4 rounded-full bg-red-600 block shrink-0"></span>
-                  Vibrant Red
-                </button>
-                <button onclick="setTheme('#E61C3C', 'benefit-red')" class="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left flex items-center gap-2 cursor-pointer text-xs font-semibold">
-                  <span class="w-4 h-4 rounded-full bg-red-500 block shrink-0"></span>
-                  Benefit Classic
-                </button>
-                <button onclick="setTheme('#B45309', 'business-gold')" class="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left flex items-center gap-2 cursor-pointer text-xs font-semibold">
-                  <span class="w-4 h-4 rounded-full bg-amber-700 block shrink-0"></span>
-                  Arabic Gold
-                </button>
-                <button onclick="setTheme('#0F172A', 'minimal')" class="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left flex items-center gap-2 cursor-pointer text-xs font-semibold">
-                  <span class="w-4 h-4 rounded-full bg-slate-800 block shrink-0"></span>
-                  Slate Minimal
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 block mb-1">PRINT GRID LAYOUT (A4 SIZE)</label>
-              <div class="grid grid-cols-3 gap-1.5">
-                <button onclick="setLayout('full-a4')" id="btn-full-a4" class="p-2 border border-red-500 bg-red-50 text-red-700 font-bold text-[10px] rounded-lg transition cursor-pointer text-center">1x Poster</button>
-                <button onclick="setLayout('half-a4-double')" id="btn-half-a4-double" class="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium text-[10px] rounded-lg transition cursor-pointer text-center">2x Desk</button>
-                <button onclick="setLayout('four-up-card')" id="btn-four-up-card" class="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium text-[10px] rounded-lg transition cursor-pointer text-center">4x Mini</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer Branding & info -->
-      <div class="text-center text-[10px] text-slate-400 font-medium border-t border-slate-100 pt-4 mt-4">
-        <p>Powered by Central Bank of Bahrain protocols</p>
-        <p class="mt-0.5 text-slate-500 font-semibold">Saved locally to device disk</p>
-      </div>
-
-    </section>
-
-    <!-- Right visual poster sandbox -->
-    <section class="flex-1 bg-slate-100 p-8 overflow-y-auto flex items-start justify-center">
-      
-      <!-- Scale Frame mimicking physical A4 sheet -->
-      <div id="a4-sheet" class="bg-white w-[520px] min-h-[735px] shadow-2xl relative p-8 flex flex-col justify-between transition-all duration-300 print-area rounded-xs">
-        <!-- Render cards inside grid dynamically -->
-        <div id="print-grid" class="grid grid-cols-1 gap-6 w-full flex-1">
-          <!-- Populated dynamically via javascript block below -->
-        </div>
-
-        <!-- Printed footer credit -->
-        <div class="text-slate-400 text-[10px] font-mono border-t border-slate-100 mt-6 pt-3 flex justify-between uppercase tracking-wider shrink-0 w-full">
-          <span class="font-bold text-slate-500">Developed by Arif</span>
-          <span id="current-date-el">Date: 2026-06-18</span>
-        </div>
-      </div>
-      
-    </section>
-
-  </main>
-
   <script>
-    // Local configuration state initialized with user choices
-    let config = {
-      accountName: `NOAH 24 MARKET WLL`,
-      paymentType: `iban`,
-      iban: `BH12BENEF000012345678`,
-      mobile: `39123456`,
-      bankName: `Bank of Bahrain and Kuwait (BBK)`,
-      amount: ``,
-      reference: ``,
-      themeColor: `#DC2626`,
-      frameStyle: `vibrant-pro`,
-      printLayout: `full-a4`,
-    };
+// ---- Canvas drawing: QR code ----
+function drawQRCode(ctx, qr, x, y, targetSize) {
+  const n = qr.getModuleCount();
+  const cell = Math.max(1, Math.floor(targetSize / n));
+  const actualSize = cell * n;
+  const offset = (targetSize - actualSize) / 2;
+  ctx.save();
+  ctx.translate(x + offset, y + offset);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, actualSize, actualSize);
+  ctx.fillStyle = '#0a0a0a';
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (qr.isDark(r, c)) ctx.fillRect(c * cell, r * cell, cell, cell);
+    }
+  }
+  ctx.restore();
+  return actualSize;
+}
 
-    function toggleInputs() {
-      const pType = document.getElementById('paymentType').value;
-      config.paymentType = pType;
+// ---- Rounded rect helper (manual, for broad mobile-browser compatibility) ----
+function roundedRectPath(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
 
-      const ibanBox = document.getElementById('ibanBox');
-      const mobileBox = document.getElementById('mobileBox');
+function fillRoundedRect(ctx, x, y, w, h, r, fillStyle) {
+  roundedRectPath(ctx, x, y, w, h, r);
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+}
 
-      if (pType === 'iban') {
-        ibanBox.style.display = 'block';
-        mobileBox.style.display = 'none';
-      } else if (pType === 'mobile') {
-        ibanBox.style.display = 'none';
-        mobileBox.style.display = 'block';
+function strokeRoundedRect(ctx, x, y, w, h, r, strokeStyle, lineWidth) {
+  roundedRectPath(ctx, x, y, w, h, r);
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+}
+
+function lighten(hex, amt) {
+  const c = hexToRgb(hex);
+  const r = Math.round(c.r + (255 - c.r) * amt);
+  const g = Math.round(c.g + (255 - c.g) * amt);
+  const b = Math.round(c.b + (255 - c.b) * amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  return {
+    r: parseInt(hex.substring(0, 2), 16),
+    g: parseInt(hex.substring(2, 4), 16),
+    b: parseInt(hex.substring(4, 6), 16)
+  };
+}
+
+// ---- Invalid / empty placeholder card ----
+function drawPlaceholderCard(ctx, x, y, w, h, message) {
+  const pad = Math.max(10, Math.min(w, h) * 0.045);
+  const radius = Math.min(w, h) * 0.045;
+  fillRoundedRect(ctx, x, y, w, h, radius, '#fafafa');
+  strokeRoundedRect(ctx, x, y, w, h, radius, '#e2b8b8', Math.max(2, Math.min(w, h) * 0.012));
+
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  ctx.fillStyle = '#dc2626';
+  ctx.font = `${Math.max(20, h * 0.08)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⚠', cx, cy - h * 0.05);
+
+  ctx.fillStyle = '#9a3434';
+  ctx.font = `600 ${Math.max(10, h * 0.022)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+  wrapText(ctx, message, cx, cy + h * 0.06, w - pad * 2, h * 0.03);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+}
+
+function wrapText(ctx, text, cx, startY, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let y = startY;
+  const lines = [];
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  const totalH = lines.length * lineHeight;
+  let yy = startY - totalH / 2 + lineHeight / 2;
+  lines.forEach(l => { ctx.fillText(l, cx, yy); yy += lineHeight; });
+}
+
+// ---- Main card drawing (ported from validated Python prototype) ----
+function drawCard(ctx, x, y, w, h, themeHex, data, qr) {
+  const FONT = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  const MONO = '"SF Mono", "Roboto Mono", Consolas, monospace';
+  const pad = Math.max(10, Math.min(w, h) * 0.045);
+  const borderW = Math.max(2, Math.min(w, h) * 0.012);
+  const radius = Math.min(w, h) * 0.045;
+  const cx = x + w / 2;
+
+  fillRoundedRect(ctx, x, y, w, h, radius, '#ffffff');
+  strokeRoundedRect(ctx, x, y, w, h, radius, themeHex, borderW);
+
+  const innerTop = y + borderW;
+  const headerH = h * 0.105;
+
+  // header bar (rounded top corners only)
+  fillRoundedRect(ctx, x + borderW, innerTop, w - borderW * 2, headerH, radius - borderW, themeHex);
+  ctx.fillStyle = themeHex;
+  ctx.fillRect(x + borderW, innerTop + headerH / 2, w - borderW * 2, headerH / 2);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `700 ${Math.max(10, h * 0.026)}px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SCAN & PAY', cx, innerTop + headerH / 2);
+
+  const footerReserve = pad * 2.2;
+
+  // ---- measure pass ----
+  ctx.textBaseline = 'top';
+  let nameFontSize = Math.max(11, h * 0.032);
+  const name = (data.accountName || '').toUpperCase();
+  ctx.font = `700 ${nameFontSize}px ${FONT}`;
+  while (ctx.measureText(name).width > w - pad * 2 && nameFontSize > 9) {
+    nameFontSize -= 1;
+    ctx.font = `700 ${nameFontSize}px ${FONT}`;
+  }
+  const nameH = nameFontSize * 1.2;
+
+  const bankFontSize = Math.max(8, h * 0.018);
+  const bank = (data.bankName || '').toUpperCase();
+  const bankH = bankFontSize * 1.2;
+
+  const qrSize = Math.min(w, h) * 0.40;
+  const qrBoxPad = qrSize * 0.06;
+  const qrTotalH = qrSize + qrBoxPad * 2;
+
+  const badgeFontSize = Math.max(8, h * 0.015);
+  ctx.font = `700 ${badgeFontSize}px ${FONT}`;
+  const badgeText = 'SCAN TO PAY INSTANTLY';
+  const badgeTextW = ctx.measureText(badgeText).width;
+  const badgeH = badgeFontSize * 1.2 + pad * 0.5;
+
+  const rows = [['ACCOUNT', data.accountDisplay || '']];
+  if (data.amount) rows.push(['AMOUNT', data.amount + ' BHD']);
+  if (data.reference) rows.push(['NOTE', data.reference]);
+
+  const labelFontSize = Math.max(8, h * 0.0145);
+  const valueFontSize = Math.max(8, h * 0.0155);
+  ctx.font = `700 ${labelFontSize}px ${FONT}`;
+  let maxRowW = 0;
+  ctx.font = `700 ${valueFontSize}px ${MONO}`;
+  rows.forEach(([label, value]) => {
+    ctx.font = `700 ${labelFontSize}px ${FONT}`;
+    const lw = ctx.measureText(label).width;
+    ctx.font = `700 ${valueFontSize}px ${MONO}`;
+    const vw = ctx.measureText(value).width;
+    maxRowW = Math.max(maxRowW, lw + vw + pad * 0.8);
+  });
+  const stacked = maxRowW > (w - pad * 2);
+  const rowH = stacked ? (labelFontSize + valueFontSize) * 1.3 : Math.max(labelFontSize, valueFontSize) * 1.9;
+  const boxH = rowH * rows.length + pad * 0.5;
+
+  const contentH = nameH + pad * 0.35 + bankH + pad * 0.6 + qrTotalH + pad * 0.55 + badgeH + pad * 0.6 + boxH;
+  const availForContent = h - headerH - footerReserve - pad * 0.4;
+  const verticalOffset = Math.max(0, (availForContent - contentH) / 2);
+
+  // ---- draw pass ----
+  let cursorY = innerTop + headerH + pad * 0.5 + verticalOffset;
+
+  ctx.fillStyle = '#1e2330';
+  ctx.font = `700 ${nameFontSize}px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.fillText(name, cx, cursorY);
+  cursorY += nameH + pad * 0.35;
+
+  ctx.fillStyle = '#8c94a0';
+  ctx.font = `${bankFontSize}px ${FONT}`;
+  ctx.fillText(bank, cx, cursorY);
+  cursorY += bankH + pad * 0.6;
+
+  const qx = cx - qrSize / 2;
+  const qy = cursorY;
+  fillRoundedRect(ctx, qx - qrBoxPad, qy - qrBoxPad, qrSize + qrBoxPad * 2, qrSize + qrBoxPad * 2, radius * 0.6, '#ffffff');
+  strokeRoundedRect(ctx, qx - qrBoxPad, qy - qrBoxPad, qrSize + qrBoxPad * 2, qrSize + qrBoxPad * 2, radius * 0.6, lighten(themeHex, 0.75), Math.max(1, borderW));
+  drawQRCode(ctx, qr, qx, qy, qrSize);
+  cursorY = qy + qrSize + qrBoxPad + pad * 0.55;
+
+  const badgeW = badgeTextW + pad * 1.0;
+  fillRoundedRect(ctx, cx - badgeW / 2, cursorY, badgeW, badgeH, badgeH / 2, '#ffebeb');
+  ctx.fillStyle = '#c81e1e';
+  ctx.font = `700 ${badgeFontSize}px ${FONT}`;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(badgeText, cx, cursorY + badgeH / 2);
+  ctx.textBaseline = 'top';
+  cursorY += badgeH + pad * 0.6;
+
+  const boxX0 = x + pad, boxX1 = x + w - pad;
+  fillRoundedRect(ctx, boxX0, cursorY, boxX1 - boxX0, boxH, radius * 0.4, '#f7f8fa');
+  strokeRoundedRect(ctx, boxX0, cursorY, boxX1 - boxX0, boxH, radius * 0.4, '#ebedf0', 1);
+  let ry = cursorY + pad * 0.35;
+  ctx.textAlign = 'left';
+  rows.forEach(([label, value]) => {
+    ctx.fillStyle = '#969eac';
+    ctx.font = `700 ${labelFontSize}px ${FONT}`;
+    ctx.fillText(label, boxX0 + pad * 0.6, ry);
+    ctx.fillStyle = '#282d37';
+    ctx.font = `700 ${valueFontSize}px ${MONO}`;
+    if (stacked) {
+      ctx.fillText(value, boxX0 + pad * 0.6, ry + labelFontSize * 1.15);
+    } else {
+      const vw = ctx.measureText(value).width;
+      ctx.fillText(value, boxX1 - pad * 0.6 - vw, ry);
+    }
+    ry += rowH;
+  });
+  cursorY += boxH;
+
+  // footer
+  ctx.strokeStyle = '#ebedf0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + pad, y + h - pad * 1.6);
+  ctx.lineTo(x + w - pad, y + h - pad * 1.6);
+  ctx.stroke();
+
+  ctx.fillStyle = '#aab0ba';
+  ctx.font = `${Math.max(7, h * 0.013)}px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.fillText('Open BenefitPay app \u2192 scan QR to pay', cx, y + h - pad * 1.3);
+  ctx.textAlign = 'left';
+}
+
+function drawWatermark(ctx, pageW, pageH) {
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = '#5b6270';
+  ctx.font = `700 16px -apple-system, "Segoe UI", Roboto, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('✦ Arif', pageW - 22, pageH - 18);
+  ctx.restore();
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { drawCard, drawQRCode, drawPlaceholderCard, drawWatermark, fillRoundedRect, strokeRoundedRect, roundedRectPath, hexToRgb, lighten };
+}
+
+// Minimal, dependency-free single-page PDF writer that embeds a JPEG.
+// Validated structurally with qpdf/pypdf and visually with pdftoppm during development.
+
+function strToBytes(str) {
+  const arr = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) arr[i] = str.charCodeAt(i) & 0xff;
+  return arr;
+}
+
+function dataURLToBytes(dataURL) {
+  const base64 = dataURL.split(',')[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function buildPDFBytes(jpegBytes, imgW, imgH, pageWPt, pageHPt) {
+  let parts = [];
+  let currentOffset = 0;
+  const offsets = [];
+
+  function push(strOrBytes) {
+    const bytes = (typeof strOrBytes === 'string') ? strToBytes(strOrBytes) : strOrBytes;
+    parts.push(bytes);
+    currentOffset += bytes.length;
+  }
+
+  push('%PDF-1.4\n');
+
+  offsets[1] = currentOffset;
+  push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+
+  offsets[2] = currentOffset;
+  push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+
+  offsets[3] = currentOffset;
+  push('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pageWPt + ' ' + pageHPt + '] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n');
+
+  offsets[4] = currentOffset;
+  push('4 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + imgW + ' /Height ' + imgH +
+       ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpegBytes.length + ' >>\nstream\n');
+  push(jpegBytes);
+  push('\nendstream\nendobj\n');
+
+  offsets[5] = currentOffset;
+  const content = 'q ' + pageWPt.toFixed(2) + ' 0 0 ' + pageHPt.toFixed(2) + ' 0 0 cm /Im0 Do Q';
+  push('5 0 obj\n<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream\nendobj\n');
+
+  const xrefOffset = currentOffset;
+  let xref = 'xref\n0 6\n0000000000 65535 f \n';
+  for (let i = 1; i <= 5; i++) xref += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+  push(xref);
+  push('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF');
+
+  let total = 0;
+  parts.forEach(p => total += p.length);
+  const result = new Uint8Array(total);
+  let off = 0;
+  parts.forEach(p => { result.set(p, off); off += p.length; });
+  return result;
+}
+
+// canvas: an HTMLCanvasElement already drawn with the full sheet
+// Returns a Blob with mime type application/pdf, sized to exact A4 (595.28 x 841.89 pt)
+function canvasToPDFBlob(canvas, quality) {
+  const dataURL = canvas.toDataURL('image/jpeg', quality || 0.92);
+  const jpegBytes = dataURLToBytes(dataURL);
+  const pdfBytes = buildPDFBytes(jpegBytes, canvas.width, canvas.height, 595.28, 841.89);
+  return new Blob([pdfBytes], { type: 'application/pdf' });
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { buildPDFBytes, dataURLToBytes, canvasToPDFBlob };
+}
+
+// ---- Detection & validation (shared logic, framework-free) ----
+
+function detectAccountType(raw) {
+  const cleaned = raw.replace(/\s+/g, '');
+  if (cleaned.length === 0) return 'empty';
+  return /^[A-Za-z]/.test(cleaned) ? 'iban' : 'mobile';
+}
+
+function validateIBAN(raw) {
+  const clean = raw.replace(/\s+/g, '').toUpperCase();
+  if (clean.length === 0) return { valid: false, message: 'IBAN লিখুন' };
+  if (!clean.startsWith('BH')) return { valid: false, message: '"BH" দিয়ে শুরু হতে হবে' };
+  if (!/^[A-Z0-9]+$/.test(clean)) return { valid: false, message: 'শুধু অক্ষর ও সংখ্যা লেখা যাবে' };
+  if (clean.length < 22) return { valid: false, message: `আরও ${22 - clean.length} ক্যারেক্টার লাগবে (মোট ২২)` };
+  if (clean.length > 22) return { valid: false, message: `${clean.length - 22} ক্যারেক্টার বেশি হয়ে গেছে (মোট ২২)` };
+  return { valid: true, message: 'সঠিক IBAN ✓', clean };
+}
+
+function validateMobile(raw) {
+  const digits = raw.replace(/\D/g, '');
+  let main = digits;
+  if (digits.startsWith('973')) main = digits.substring(3);
+  if (main.length === 0) return { valid: false, message: 'মোবাইল নম্বর লিখুন' };
+  if (!/^[136]/.test(main)) return { valid: false, message: '১, ৩ বা ৬ দিয়ে শুরু হতে হবে' };
+  if (main.length < 8) return { valid: false, message: `আরও ${8 - main.length} ডিজিট লাগবে (মোট ৮)` };
+  if (main.length > 8) return { valid: false, message: `${main.length - 8} ডিজিট বেশি হয়ে গেছে (মোট ৮)` };
+  return { valid: true, message: 'সঠিক মোবাইল নম্বর ✓', clean: '973' + main };
+}
+
+function validateAccountInput(raw) {
+  const type = detectAccountType(raw);
+  if (type === 'empty') return { type, valid: false, message: 'IBAN অথবা মোবাইল নম্বর লিখুন' };
+  const result = type === 'iban' ? validateIBAN(raw) : validateMobile(raw);
+  return Object.assign({ type }, result);
+}
+
+function formatIBANDisplay(clean) {
+  const parts = [];
+  for (let i = 0; i < clean.length; i += 4) parts.push(clean.substring(i, i + 4));
+  return parts.join(' ');
+}
+
+function formatMobileDisplay(clean973) {
+  // clean973 like '97339123456'
+  const main = clean973.substring(3);
+  return '+973 ' + main.substring(0, 4) + ' ' + main.substring(4, 8);
+}
+
+function validateAmount(raw) {
+  if (!raw) return { valid: true, message: '' };
+  const num = parseFloat(raw);
+  if (isNaN(num) || num < 0) return { valid: false, message: 'সঠিক সংখ্যা লিখুন' };
+  return { valid: true, message: '', formatted: num.toFixed(3) };
+}
+
+function buildPayload(config) {
+  const v = validateAccountInput(config.accountInput || '');
+  if (!v.valid) return { ok: false, message: v.message };
+  const amt = validateAmount(config.amount || '');
+  if (!amt.valid) return { ok: false, message: amt.message };
+
+  const payloadObj = {};
+  if (v.type === 'iban') payloadObj.iban = v.clean;
+  else payloadObj.mobile = v.clean;
+  if (amt.formatted) payloadObj.amount = amt.formatted;
+
+  const display = v.type === 'iban' ? formatIBANDisplay(v.clean) : formatMobileDisplay(v.clean);
+  return { ok: true, text: JSON.stringify(payloadObj), display, type: v.type, amount: amt.formatted || '' };
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { detectAccountType, validateIBAN, validateMobile, validateAccountInput, formatIBANDisplay, formatMobileDisplay, validateAmount, buildPayload };
+}
+
+// ---- App state & constants ----
+const THEMES = [
+  { id: 'red', name: 'Vibrant Red', color: '#DC2626' },
+  { id: 'classic', name: 'Benefit Classic', color: '#E61C3C' },
+  { id: 'gold', name: 'Arabic Gold', color: '#B45309' },
+  { id: 'slate', name: 'Slate Minimal', color: '#0F172A' }
+];
+
+const LAYOUTS = [
+  { id: '1x', label: '1× Poster', rows: 1, cols: 1 },
+  { id: '2x', label: '2× Desk', rows: 2, cols: 1 },
+  { id: '4x', label: '4× Mini', rows: 2, cols: 2 }
+];
+
+const PAGE_W = 1240, PAGE_H = 1754; // A4 portrait @ ~150dpi
+const PAGE_MARGIN = 46, CELL_GAP = 24;
+
+const DEFAULTS = {
+  accountName: 'Your Business Name',
+  accountInput: 'BH12BENF00001234567890',
+  bankName: 'Your Bank Name',
+  amount: '',
+  reference: '',
+  theme: THEMES[0].color,
+  layout: '1x'
+};
+
+let state = Object.assign({}, DEFAULTS);
+
+const canvas = document.getElementById('sheetCanvas');
+canvas.width = PAGE_W;
+canvas.height = PAGE_H;
+const ctx = canvas.getContext('2d');
+
+// ---- Build theme + layout selector buttons ----
+const themeGrid = document.getElementById('themeGrid');
+THEMES.forEach(t => {
+  const btn = document.createElement('button');
+  btn.className = 'theme-swatch' + (t.color === state.theme ? ' active' : '');
+  btn.style.background = t.color;
+  btn.title = t.name;
+  btn.setAttribute('aria-label', t.name);
+  btn.addEventListener('click', () => {
+    state.theme = t.color;
+    document.querySelectorAll('.theme-swatch').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    renderSheet(false);
+  });
+  themeGrid.appendChild(btn);
+});
+
+const layoutGrid = document.getElementById('layoutGrid');
+LAYOUTS.forEach(l => {
+  const btn = document.createElement('button');
+  btn.className = 'layout-btn' + (l.id === state.layout ? ' active' : '');
+  btn.textContent = l.label;
+  btn.addEventListener('click', () => {
+    state.layout = l.id;
+    document.querySelectorAll('.layout-btn').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    renderSheet(false);
+  });
+  layoutGrid.appendChild(btn);
+});
+
+// ---- Field wiring ----
+function wireField(id, stateKey, after) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    state[stateKey] = el.value;
+    if (after) after();
+    renderSheet(false);
+  });
+}
+
+wireField('accountName', 'accountName');
+wireField('bankName', 'bankName');
+wireField('amount', 'amount');
+wireField('reference', 'reference');
+wireField('accountInput', 'accountInput', updateAccountHint);
+
+function updateAccountHint() {
+  const hintEl = document.getElementById('accountHint');
+  const raw = state.accountInput;
+  if (!raw || raw.trim() === '') {
+    hintEl.textContent = '';
+    hintEl.className = 'field-hint';
+    return;
+  }
+  const v = validateAccountInput(raw);
+  hintEl.textContent = v.message;
+  hintEl.className = 'field-hint ' + (v.valid ? 'hint-ok' : 'hint-error');
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state = Object.assign({}, DEFAULTS);
+  document.getElementById('accountName').value = state.accountName;
+  document.getElementById('accountInput').value = state.accountInput;
+  document.getElementById('bankName').value = state.bankName;
+  document.getElementById('amount').value = state.amount;
+  document.getElementById('reference').value = state.reference;
+  document.querySelectorAll('.theme-swatch').forEach((el, i) => el.classList.toggle('active', THEMES[i].color === state.theme));
+  document.querySelectorAll('.layout-btn').forEach((el, i) => el.classList.toggle('active', LAYOUTS[i].id === state.layout));
+  updateAccountHint();
+  renderSheet(false);
+});
+
+// ---- Render ----
+function getGrid() {
+  return LAYOUTS.find(l => l.id === state.layout) || LAYOUTS[0];
+}
+
+function renderSheet(withWatermark) {
+  ctx.clearRect(0, 0, PAGE_W, PAGE_H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, PAGE_W, PAGE_H);
+
+  const grid = getGrid();
+  const availW = PAGE_W - PAGE_MARGIN * 2 - CELL_GAP * (grid.cols - 1);
+  const availH = PAGE_H - PAGE_MARGIN * 2 - CELL_GAP * (grid.rows - 1);
+  const cellW = availW / grid.cols;
+  const cellH = availH / grid.rows;
+
+  const payload = buildPayload(state);
+  let qr = null;
+  if (payload.ok) {
+    qr = qrcode(0, 'H');
+    qr.addData(payload.text);
+    qr.make();
+  }
+
+  for (let r = 0; r < grid.rows; r++) {
+    for (let c = 0; c < grid.cols; c++) {
+      const cx = PAGE_MARGIN + c * (cellW + CELL_GAP);
+      const cy = PAGE_MARGIN + r * (cellH + CELL_GAP);
+      if (payload.ok) {
+        drawCard(ctx, cx, cy, cellW, cellH, state.theme, {
+          accountName: state.accountName || 'Your Business Name',
+          bankName: state.bankName || '',
+          accountDisplay: payload.display,
+          amount: payload.amount,
+          reference: state.reference
+        }, qr);
       } else {
-        ibanBox.style.display = 'block';
-        mobileBox.style.display = 'block';
+        drawPlaceholderCard(ctx, cx, cy, cellW, cellH, payload.message);
       }
     }
+  }
 
-    function setTheme(color, frameStyle) {
-      config.themeColor = color;
-      config.frameStyle = frameStyle;
-      updateQR();
-    }
+  if (withWatermark) drawWatermark(ctx, PAGE_W, PAGE_H);
+  return payload.ok;
+}
 
-    function setLayout(layout) {
-      config.printLayout = layout;
-      
-      // Update toggle buttons active rings
-      ['full-a4', 'half-a4-double', 'four-up-card'].forEach(lay => {
-        const btn = document.getElementById('btn-' + lay);
-        if (lay === layout) {
-          btn.className = "p-2 border border-red-500 bg-red-50 text-red-700 font-bold text-[10px] rounded-lg transition cursor-pointer text-center";
-        } else {
-          btn.className = "p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium text-[10px] rounded-lg transition cursor-pointer text-center";
-        }
-      });
-      
-      updateQR();
-    }
+// ---- Downloads ----
+function triggerDownload(href, filename) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
-    function formatIBANString(ibanVal) {
-      let clean = ibanVal.replace(/[^A-Z0-9]/gi, '').toUpperCase();
-      if (!clean.startsWith('BH') && clean.length === 20) {
-        clean = 'BH' + clean;
-      }
-      const parts = [];
-      for (let i = 0; i < clean.length; i += 4) {
-        parts.push(clean.substring(i, Math.min(i + 4, clean.length)));
-      }
-      return parts.join(' ');
-    }
+document.getElementById('downloadJpgBtn').addEventListener('click', () => {
+  const ok = renderSheet(true);
+  if (!ok) {
+    renderSheet(false);
+    document.getElementById('accountInput').focus();
+    return;
+  }
+  const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+  triggerDownload(dataURL, 'benefit-qr.jpg');
+  renderSheet(false);
+});
 
-    function formatBahrainMobileString(mobileVal) {
-      const clean = mobileVal.replace(/\D/g, '');
-      if (clean.startsWith('973') && clean.length > 3) {
-        const part = clean.substring(3);
-        return "+973 " + part.substring(0, 4) + " " + part.substring(4, 8);
-      }
-      return "+973 " + mobileVal.substring(0, 4) + " " + mobileVal.substring(4, 8);
-    }
+document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+  const ok = renderSheet(true);
+  if (!ok) {
+    renderSheet(false);
+    document.getElementById('accountInput').focus();
+    return;
+  }
+  const blob = canvasToPDFBlob(canvas, 0.92);
+  const url = URL.createObjectURL(blob);
+  triggerDownload(url, 'benefit-qr.pdf');
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  renderSheet(false);
+});
 
-    function formatBHDString(amountVal) {
-      if (!amountVal) return '';
-      const num = parseFloat(amountVal);
-      if (isNaN(num)) return '';
-      return num.toFixed(3) + " BHD";
-    }
-
-    function validateBahrainIBAN(ibanVal) {
-      const clean = ibanVal.replace(/s+/g, '').toUpperCase();
-      if (clean.length === 0) return { isValid: false, message: 'IBAN is required.' };
-      if (!clean.startsWith('BH')) return { isValid: false, message: 'IBAN must start with "BH".' };
-      if (clean.length !== 22) return { isValid: false, message: 'IBAN must be exactly 22 chars.' };
-      if (!/^[A-Z0-9]+$/.test(clean.substring(2))) return { isValid: false, message: 'IBAN can only contain alphanumeric.' };
-      return { isValid: true };
-    }
-
-    function validateBahrainMobile(mobileVal) {
-      const clean = mobileVal.replace(/D/g, '');
-      let mainPart = clean;
-      if (clean.startsWith('973')) mainPart = clean.substring(3);
-      if (mainPart.length === 0) return { isValid: false, message: 'Mobile number is required.' };
-      if (mainPart.length !== 8) return { isValid: false, message: 'Mobile number must be 8 digits.' };
-      if (!/^[136]d{7}$/.test(mainPart)) return { isValid: false, message: 'Mobile must begin with 1, 3 or 6.' };
-      return { isValid: true };
-    }
-
-    function generatePayloadText() {
-      const isIban = config.paymentType === 'iban';
-      const isMobile = config.paymentType === 'mobile';
-      const cleanIban = config.iban.replace(/s+/g, '').toUpperCase();
-      const cleanMobile = config.mobile.replace(/D/g, '');
-      
-      const mobileWithPrefix = cleanMobile.startsWith('973') ? cleanMobile : '973' + cleanMobile;
-
-      if (isIban) {
-        const v = validateBahrainIBAN(cleanIban);
-        if (!v.isValid) return "ERROR: " + v.message;
-      }
-      if (isMobile) {
-        const v = validateBahrainMobile(cleanMobile);
-        if (!v.isValid) return "ERROR: " + v.message;
-      }
-
-      const payloadObj = {};
-      if (isIban) {
-        payloadObj["iban"] = cleanIban;
-      } else {
-        payloadObj["mobile"] = mobileWithPrefix;
-      }
-      payloadObj["amount"] = config.amount || "";
-
-      return JSON.stringify(payloadObj);
-    }
-
-    function resetDefaults() {
-      document.getElementById('accountName').value = "NOAH 24 MARKET WLL";
-      document.getElementById('paymentType').value = "iban";
-      document.getElementById('iban').value = "BH12BENEF000012345678";
-      document.getElementById('mobile').value = "39123456";
-      document.getElementById('bankName').value = "Bank of Bahrain and Kuwait";
-      
-      config.accountName = "NOAH 24 MARKET WLL";
-      config.paymentType = "iban";
-      config.iban = "BH12BENEF000012345678";
-      config.mobile = "39123456";
-      config.bankName = "Bank of Bahrain and Kuwait";
-      config.amount = "";
-      config.reference = "";
-      
-      toggleInputs();
-      updateQR();
-    }
-
-    function updateQR() {
-      // Sync form values to config
-      config.accountName = document.getElementById('accountName').value || 'NOAH 24 MARKET WLL';
-      config.iban = document.getElementById('iban').value;
-      config.mobile = document.getElementById('mobile').value;
-      config.bankName = document.getElementById('bankName').value;
-      config.amount = document.getElementById('amount') ? document.getElementById('amount').value : '';
-      config.reference = document.getElementById('reference') ? document.getElementById('reference').value : '';
-
-      const printGrid = document.getElementById('print-grid');
-      const sheet = document.getElementById('a4-sheet');
-      
-      // Clear current grid
-      printGrid.innerHTML = '';
-
-      // Determine grid configuration
-      let cardCount = 1;
-      if (config.printLayout === 'full-a4') {
-        printGrid.className = "grid grid-cols-1 w-full h-full";
-        sheet.className = "bg-white w-[520px] min-h-[735px] shadow-2xl relative p-8 flex flex-col justify-between transition-all duration-300 print-area rounded-2xl";
-        cardCount = 1;
-      } else if (config.printLayout === 'half-a4-double') {
-        printGrid.className = "grid grid-cols-2 gap-4 w-full h-full";
-        sheet.className = "bg-white w-[750px] min-h-[520px] shadow-2xl relative p-6 flex flex-col justify-between transition-all duration-300 print-area rounded-2xl";
-        cardCount = 2;
-      } else {
-        printGrid.className = "grid grid-cols-2 gap-3 w-full h-full";
-        sheet.className = "bg-white w-[640px] min-h-[600px] shadow-2xl relative p-4 flex flex-col justify-between transition-all duration-300 print-area rounded-2xl";
-        cardCount = 4;
-      }
-
-      // Generate payload
-      const payloadText = generatePayloadText();
-
-      // Render cards
-      for (let i = 0; i < cardCount; i++) {
-        const isVibrantPro = config.frameStyle === 'vibrant-pro';
-        const card = document.createElement('div');
-        
-        card.className = "flex flex-col h-full bg-white text-gray-800 border-solid relative overflow-hidden transition-all duration-200";
-        card.style.borderColor = config.themeColor;
-        card.style.borderWidth = config.frameStyle === 'minimal' ? '1px' : isVibrantPro ? '4px' : '10px';
-        card.style.borderRadius = isVibrantPro ? '1.75rem' : config.frameStyle === 'compact-counter' ? '1.25rem' : '1rem';
-        
-        if (config.printLayout === 'four-up-card') {
-          card.style.padding = '0.75rem';
-        } else {
-          card.style.padding = '1.25rem';
-        }
-
-        // Inside card template HTML
-        let cardHTML = '';
-        
-        // Accents
-        if (isVibrantPro) {
-          cardHTML += `<div class="absolute top-0 right-0 w-16 h-16 overflow-hidden pointer-events-none">
-            <div class="absolute top-0 right-0 w-24 h-24 rotate-45 translate-x-12 -translate-y-12" style="background-color: ${config.themeColor}"></div>
-          </div>`;
-        }
-
-        // Top Header
-        if (isVibrantPro) {
-          cardHTML += `<div class="w-full flex justify-between items-start pt-4 px-4 pb-1">
-            <div class="font-extrabold text-xl tracking-tight leading-none" style="color: ${config.themeColor}">Benefit<span class="text-slate-800">Pay</span></div>
-            <div class="text-right">
-              <div class="text-[8px] text-slate-400 font-bold uppercase tracking-wider">Merchant Copy</div>
-              <div class="text-[10px] text-slate-600 font-semibold mt-0.5">Scan to Pay</div>
-            </div>
-          </div>`;
-        } else {
-          cardHTML += `<div class="p-4 text-center text-white flex flex-col items-center justify-center relative rounded-t-lg" style="background-color: ${config.themeColor}">
-            <div class="flex items-center justify-center gap-1">
-              <span class="text-xs font-bold uppercase tracking-wider">SCAN & PAY SECURELY</span>
-            </div>
-          </div>`;
-        }
-
-        // Profile Detail Box
-        cardHTML += `<div class="flex-1 flex flex-col items-center justify-center px-4 py-2 text-center">
-          <div class="${isVibrantPro ? 'mb-3' : 'mb-2'}">
-            <h3 class="${isVibrantPro ? 'text-xl font-extrabold text-slate-800 capitalize' : 'text-md font-bold text-slate-800 capitalize'}">
-              ${config.accountName}
-            </h3>
-            <span class="text-[9px] text-slate-400 font-mono tracking-wider font-semibold block uppercase">${config.bankName || 'BenefitPay Instant Route'}</span>
-          </div>`;
-
-        // The exact QR DIV hook
-        const qrId = 'qrcode-block-' + i;
-        cardHTML += `<div id="${qrId}" class="p-2 bg-white flex items-center justify-center relative my-1 transition-all mx-auto" style="border-radius: ${isVibrantPro ? '24px' : '12px'}; border-width: ${isVibrantPro ? '6px' : '1px'}; border-style: solid; border-color: ${isVibrantPro ? config.themeColor : '#f1f5f9'}">
-        </div>`;
-
-        // Direct badge
-        cardHTML += `<div class="bg-red-50 text-red-600 px-2 py-1 rounded-full text-[8px] font-bold tracking-wider uppercase mt-2 shadow-sm inline-flex items-center gap-1 mx-auto">
-          <span class="w-1 h-1 rounded-full bg-red-600 animate-pulse"></span>
-          Scan to Instant Transfer
-        </div>`;
-
-        // Data Table
-        cardHTML += `<div class="w-full mt-3 bg-slate-50/70 border border-slate-100 rounded-xl p-2.5 text-left text-[9px] font-mono space-y-1">`;
-        if (config.paymentType === 'iban') {
-          cardHTML += `<div class="flex justify-between items-center"><span class="text-slate-400 font-sans font-bold">IBAN:</span><span class="text-slate-700 font-bold">BH12BE...5678</span></div>`;
-        } else {
-          cardHTML += `<div class="flex justify-between items-center"><span class="text-slate-400 font-sans font-bold">MobileNo:</span><span class="text-slate-700 font-bold">+973 3912 3456</span></div>`;
-        }
-        if (config.amount) {
-          cardHTML += `<div class="flex justify-between items-center"><span class="text-slate-400 font-sans font-bold">Amount:</span><span class="text-red-600 font-bold"></span></div>`;
-        }
-        if (config.reference) {
-          cardHTML += `<div class="flex justify-between items-center truncate"><span class="text-slate-400 font-sans font-bold">Note:</span><span class="text-slate-600 font-bold">${config.reference}</span></div>`;
-        }
-        cardHTML += `</div></div>`;
-
-        // Footer instructions / message for Bahrain
-        if (isVibrantPro) {
-          cardHTML += `<div class="text-center bg-slate-50/60 p-2 border-t border-slate-100"><span class="text-[8px] text-slate-400 tracking-wider block font-bold uppercase font-mono">Central Bank of Bahrain</span></div>`;
-        } else {
-          cardHTML += `<div class="text-center bg-slate-100/50 p-1.5 border-t border-slate-100"><span class="text-[7px] text-slate-400 tracking-wide font-sans block">Open BenefitPay > scan QR to settle</span></div>`;
-        }
-
-        card.innerHTML = cardHTML;
-        printGrid.appendChild(card);
-
-        // Inject QR Code in safety frame using standard Kazuhiko Arase Generator
-        try {
-          if (payloadText.startsWith("ERROR:")) {
-            document.getElementById(qrId).innerHTML = `<div class="flex flex-col items-center justify-center p-3 text-red-600 bg-red-50 rounded-xl text-center" style="width: 140px; height: 140px; border: 2px dashed #fca5a5;">
-              <span class="text-xl font-bold">⚠️</span>
-              <span class="text-[9px] font-black uppercase text-red-700 mt-1 block">Invalid Input</span>
-              <span class="text-[8px] mt-0.5 leading-tight opacity-90 block">${payloadText.replace("ERROR:", "").trim()}</span>
-            </div>`;
-          } else {
-            const typeNumber = 0; // automatic selection
-            const errorCorrectionLevel = 'H';
-            const qr = qrcode(typeNumber, errorCorrectionLevel);
-            qr.addData(payloadText);
-            qr.make();
-            const qrImgTag = qr.createImgTag(config.printLayout === 'four-up-card' ? 3.5 : 4.5);
-            document.getElementById(qrId).innerHTML = qrImgTag;
-            
-            // Style the injected image nicely
-            const img = document.getElementById(qrId).querySelector('img');
-            if (img) {
-              img.className = "w-28 h-28 md:w-32 md:h-32 object-contain rounded-lg";
-            }
-          }
-        } catch (e) {
-          console.error(e);
-          document.getElementById(qrId).innerHTML = '<span class="text-[9px] text-red-500">Failed to render QR</span>';
-        }
-      }
-    }
-
-    // Initialize on first load
-    try {
-      document.getElementById('current-date-el').innerText = "Date: " + new Date().toLocaleDateString('en-BH');
-    } catch (e) {}
-    toggleInputs();
-    updateQR();
+// ---- Initial paint ----
+updateAccountHint();
+renderSheet(false);
   </script>
 </body>
-  </html>
+</html>
