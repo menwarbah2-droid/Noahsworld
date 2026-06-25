@@ -28,41 +28,43 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 14px 18px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    padding: 16px 18px;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath d='M0,55 Q50,25 100,55 T200,55 T300,55 T400,55 T500,55' stroke='white' stroke-opacity='0.16' fill='none' stroke-width='2'/%3E%3Cpath d='M0,75 Q50,45 100,75 T200,75 T300,75 T400,75 T500,75' stroke='white' stroke-opacity='0.10' fill='none' stroke-width='2'/%3E%3Cpath d='M0,30 Q50,5 100,30 T200,30 T300,30 T400,30 T500,30' stroke='white' stroke-opacity='0.08' fill='none' stroke-width='2'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, #EF4444, #B91C1C);
+    background-size: cover, cover;
+    background-position: center, center;
     position: sticky;
     top: 0;
     z-index: 10;
   }
   .app-header .brand {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .scan-icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
   }
   .app-header h1 {
-    font-size: 23px;
+    font-size: 18px;
     font-weight: 800;
     margin: 0;
-    letter-spacing: -0.3px;
-    background: linear-gradient(135deg, #EF4444, #B91C1C);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #B91C1C;
+    letter-spacing: -0.2px;
+    color: #ffffff;
+    line-height: 1.15;
   }
   .app-header .credit {
-    font-size: 13.5px;
-    color: var(--muted);
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
     font-weight: 700;
-  }
-  .app-header .logo-dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #EF4444, #B91C1C);
-    display: inline-block;
-    margin-right: 4px;
   }
 
   .app-main {
@@ -182,7 +184,7 @@
 
   .layout-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
   .layout-btn {
@@ -216,6 +218,57 @@
     height: 17px;
     accent-color: var(--accent);
     cursor: pointer;
+  }
+
+  .save-status {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    min-height: 16px;
+  }
+  .save-status-ok { color: #1a8a4c; }
+  .save-status-error { color: #c81e1e; }
+
+  .history-list {
+    margin-top: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .history-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fbfbfc;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .history-item .h-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+  .history-item .h-account {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "SF Mono", "Roboto Mono", Consolas, monospace;
+    color: var(--accent);
+    display: block;
+    margin-top: 2px;
+  }
+  .history-item .h-meta {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+  .history-empty {
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 6px 2px;
   }
 
   .btn {
@@ -256,7 +309,7 @@
       min-height: auto;
     }
     .preview-pane { padding: 20px 16px 50px; }
-    .app-header h1 { font-size: 19px; }
+    .app-header h1 { font-size: 16px; }
   }
 </style>
 </head>
@@ -264,8 +317,17 @@
 
   <header class="app-header">
     <div class="brand">
-      <h1><span class="logo-dot"></span>Benefit QR Pro</h1>
-      <span class="credit">by Arif</span>
+      <svg class="scan-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 7V5a1 1 0 0 1 1-1h2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 7V5a1 1 0 0 0-1-1h-2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 17v2a1 1 0 0 0 1 1h2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 17v2a1 1 0 0 1-1 1h-2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <rect x="9" y="9" width="6" height="6" rx="1" fill="white"/>
+      </svg>
+      <div class="brand-text">
+        <h1>BenefitPay QR Generator</h1>
+        <span class="credit">by ✦ Arif</span>
+      </div>
     </div>
   </header>
 
@@ -279,7 +341,7 @@
 
       <div class="field">
         <label for="accountInput">IBAN or Mobile Number</label>
-        <input type="text" id="accountInput" value="BH88FIBH19000866511001" maxlength="34" autocomplete="off" autocapitalize="characters">
+        <input type="text" id="accountInput" value="" placeholder="Put your IBAN or Mobile No" maxlength="34" autocomplete="off" autocapitalize="characters">
         <div class="field-hint" id="accountHint"></div>
       </div>
 
@@ -296,6 +358,11 @@
 
       <button class="btn-reset" id="resetBtn">Reset to Default</button>
 
+      <div class="section-label">History</div>
+      <div id="saveStatus" class="save-status"></div>
+      <button class="btn-reset" id="loadHistoryBtn">Load Saved History</button>
+      <div id="historyList" class="history-list"></div>
+
     </aside>
 
     <main class="preview-pane">
@@ -309,6 +376,11 @@
     </main>
 
   </div>
+
+<!-- Firebase (optional, for QR-generation history). Requires internet;
+     the rest of the app works fully offline without it. -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
   <script>
     //---------------------------------------------------------------------
@@ -1827,12 +1899,30 @@ function computeSegmentedLayout(groups, targetW, maxBoxH) {
   const numGroups = groups.length;
   const widthRatio = 0.74, charGapRatio = 0.16, groupGapRatio = 0.55;
   const K = numChars + (numChars - numGroups) * charGapRatio + (numGroups - 1) * groupGapRatio;
-  const boxH = Math.min(targetW / (widthRatio * K), maxBoxH);
+  let boxH = targetW / (widthRatio * K);
+
+  if (boxH <= maxBoxH) {
+    const boxW = boxH * widthRatio;
+    const charGap = boxW * charGapRatio;
+    const groupGap = boxW * groupGapRatio;
+    return { boxW, boxH, charGap, groupGap, totalW: targetW };
+  }
+
+  // Box height capped (short numbers, e.g. mobile): keep boxes at a sensible
+  // capped size, then spread the extra width evenly across every gap (with a
+  // modest emphasis at group boundaries) so the row still spans the exact
+  // same left/right width as the QR code above it, without one huge gap.
+  boxH = maxBoxH;
   const boxW = boxH * widthRatio;
-  const charGap = boxW * charGapRatio;
-  const groupGap = boxW * groupGapRatio;
-  const totalW = numChars * boxW + (numChars - numGroups) * charGap + (numGroups - 1) * groupGap;
-  return { boxW, boxH, charGap, groupGap, totalW };
+  const numCharGaps = numChars - numGroups;
+  const numGroupGaps = numGroups - 1;
+  const groupGapWeight = 1.6;
+  const weightSum = numCharGaps * 1 + numGroupGaps * groupGapWeight;
+  const remaining = targetW - numChars * boxW;
+  const unitGap = weightSum > 0 ? remaining / weightSum : 0;
+  const charGap = unitGap;
+  const groupGap = unitGap * groupGapWeight;
+  return { boxW, boxH, charGap, groupGap, totalW: targetW };
 }
 
 function drawSegmentedNumber(ctx, groups, cx, topY, targetW, maxBoxH, accentColor, font) {
@@ -1879,7 +1969,7 @@ function drawCard(ctx, x, y, w, h, colorId, data, qr) {
   ctx.restore();
 
   // ---- gradient header, clipped to card's rounded shape ----
-  const headerH = h * 0.20;
+  const headerH = h * 0.24;
   roundedRectPath(ctx, x, y, w, h, radius);
   ctx.save();
   ctx.clip();
@@ -1892,7 +1982,7 @@ function drawCard(ctx, x, y, w, h, colorId, data, qr) {
   ctx.fillRect(x, y, w, headerH);
   ctx.restore();
 
-  // ---- header content: small wordmark chip + business name ----
+  // ---- header content: wordmark chip + "SCAN TO PAY!" label + business name ----
   ctx.textBaseline = 'alphabetic';
   const chipSize = Math.max(8, h * 0.0125);
   ctx.font = `700 ${chipSize}px ${FONT}`;
@@ -1900,17 +1990,42 @@ function drawCard(ctx, x, y, w, h, colorId, data, qr) {
   ctx.textAlign = 'left';
   ctx.fillText('BENEFITPAY', x + pad * 0.7, y + pad * 0.65 + chipSize);
 
-  let nameSize = Math.max(12, h * 0.032);
+  const scanLabelSize = Math.max(15, h * 0.046);
+  const scanLabelText = 'SCAN TO PAY!';
+
+  let nameSize = Math.max(12, h * 0.030);
   const name = (data.accountName || '').toUpperCase();
-  ctx.font = `700 ${nameSize}px ${FONT}`;
+  ctx.font = `800 ${nameSize}px ${FONT}`;
   while (ctx.measureText(name).width > w - pad * 2 && nameSize > 9) {
     nameSize -= 1;
-    ctx.font = `700 ${nameSize}px ${FONT}`;
+    ctx.font = `800 ${nameSize}px ${FONT}`;
   }
-  ctx.fillStyle = '#ffffff';
+
+  const scanLineH = scanLabelSize * 1.25;
+  const nameLineH = nameSize * 1.2;
+  const lineGap = scanLabelSize * 0.45;
+  const blockH = scanLineH + lineGap + nameLineH;
+  const blockTop = y + chipSize + pad * 0.55 + (headerH - (chipSize + pad * 0.55) - blockH) / 2;
+
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(name, x + w / 2, y + headerH / 2 + chipSize * 0.4);
+  ctx.textBaseline = 'top';
+
+  ctx.font = `700 ${scanLabelSize}px ${FONT}`;
+  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  ctx.save();
+  ctx.letterSpacing = '1.5px';
+  ctx.fillText(scanLabelText, x + w / 2, blockTop);
+  ctx.restore();
+
+  ctx.font = `800 ${nameSize}px ${FONT}`;
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = nameSize * 0.12;
+  ctx.shadowOffsetY = nameSize * 0.04;
+  ctx.fillText(name, x + w / 2, blockTop + scanLineH + lineGap);
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
 
   // ---- content below header (margins matched to header's own padding) ----
   const contentTop = y + headerH + pad * 0.65;
@@ -2109,7 +2224,8 @@ const COLORS = [
 const LAYOUTS = [
   { id: '1x', label: '1× Poster', rows: 1, cols: 1 },
   { id: '2x', label: '2× Desk', rows: 2, cols: 1 },
-  { id: '4x', label: '4× Mini', rows: 2, cols: 2 }
+  { id: '4x', label: '4× Mini', rows: 2, cols: 2 },
+  { id: '6x', label: '6× Grid', rows: 3, cols: 2 }
 ];
 
 const PAGE_W = 1240, PAGE_H = 1754; // A4 portrait @ ~150dpi
@@ -2117,7 +2233,7 @@ const PAGE_MARGIN = 46, CELL_GAP = 24;
 
 const DEFAULTS = {
   accountName: 'Your Business Name',
-  accountInput: 'BH88FIBH19000866511001',
+  accountInput: '',
   color: COLORS[0].id,
   layout: '1x',
   showCuttingGuide: true
@@ -2214,16 +2330,24 @@ function renderSheet() {
   ctx.fillRect(0, 0, PAGE_W, PAGE_H);
 
   const grid = getGrid();
-  const availW = PAGE_W - PAGE_MARGIN * 2 - CELL_GAP * (grid.cols - 1);
-  const availH = PAGE_H - PAGE_MARGIN * 2 - CELL_GAP * (grid.rows - 1);
-  const cellW = availW / grid.cols;
-  const cellH = availH / grid.rows;
+  const cellH = (PAGE_H - PAGE_MARGIN * 2 - CELL_GAP * (grid.rows - 1)) / grid.rows;
 
-  // Cap card width to a sensible portrait aspect ratio so wide-short cells
-  // (e.g. 2x Desk layout) don't leave huge empty margins inside the card.
-  const maxCardW = cellH * 0.70;
-  const cardW = Math.min(cellW, maxCardW);
-  const cardXOffset = (cellW - cardW) / 2;
+  // Cards are sized to a sensible portrait aspect ratio first, then the whole
+  // row of cards is centered on the page with a fixed, consistent gap between
+  // them. This avoids the old approach of stretching cells to fill the page
+  // width and then shrinking cards inside oversized cells, which made the
+  // gap between cards inconsistent across layouts (e.g. 2x/6x vs 1x/4x).
+  const idealCardW = cellH * 0.70;
+  const availW = PAGE_W - PAGE_MARGIN * 2;
+  const totalGridW = grid.cols * idealCardW + (grid.cols - 1) * CELL_GAP;
+  let cardW, gridStartX;
+  if (totalGridW <= availW) {
+    cardW = idealCardW;
+    gridStartX = PAGE_MARGIN + (availW - totalGridW) / 2;
+  } else {
+    cardW = (availW - (grid.cols - 1) * CELL_GAP) / grid.cols;
+    gridStartX = PAGE_MARGIN;
+  }
 
   const payload = buildPayload(state);
   let qr = null;
@@ -2235,7 +2359,7 @@ function renderSheet() {
 
   for (let r = 0; r < grid.rows; r++) {
     for (let c = 0; c < grid.cols; c++) {
-      const cx = PAGE_MARGIN + c * (cellW + CELL_GAP) + cardXOffset;
+      const cx = gridStartX + c * (cardW + CELL_GAP);
       const cy = PAGE_MARGIN + r * (cellH + CELL_GAP);
       if (payload.ok) {
         drawCard(ctx, cx, cy, cardW, cellH, state.color, {
@@ -2248,28 +2372,40 @@ function renderSheet() {
     }
   }
 
-  if (state.showCuttingGuide && (grid.rows > 1 || grid.cols > 1)) {
-    drawCuttingGuide(grid, cellW, cellH);
+  if (state.showCuttingGuide) {
+    drawCuttingGuide(grid, cardW, cellH, gridStartX);
   }
 
   return payload.ok;
 }
 
-function drawCuttingGuide(grid, cellW, cellH) {
+const GUIDE_DIST = CELL_GAP / 2;
+
+function drawCuttingGuide(grid, cardW, cellH, gridStartX) {
   ctx.save();
   ctx.strokeStyle = '#b6bac2';
   ctx.lineWidth = 2;
   ctx.setLineDash([10, 8]);
 
-  for (let r = 1; r < grid.rows; r++) {
-    const yy = PAGE_MARGIN + r * (cellH + CELL_GAP) - CELL_GAP / 2;
+  // Single straight lines spanning the full page, each positioned exactly
+  // GUIDE_DIST from the nearest card edge on every side - identical distance
+  // everywhere since cards now sit in a uniformly-gapped, centered grid.
+  for (let r = 0; r <= grid.rows; r++) {
+    let yy;
+    if (r === 0) yy = PAGE_MARGIN - GUIDE_DIST;
+    else if (r === grid.rows) yy = PAGE_MARGIN + grid.rows * cellH + (grid.rows - 1) * CELL_GAP + GUIDE_DIST;
+    else yy = PAGE_MARGIN + r * cellH + (r - 0.5) * CELL_GAP;
     ctx.beginPath();
     ctx.moveTo(0, yy);
     ctx.lineTo(PAGE_W, yy);
     ctx.stroke();
   }
-  for (let c = 1; c < grid.cols; c++) {
-    const xx = PAGE_MARGIN + c * (cellW + CELL_GAP) - CELL_GAP / 2;
+
+  for (let c = 0; c <= grid.cols; c++) {
+    let xx;
+    if (c === 0) xx = gridStartX - GUIDE_DIST;
+    else if (c === grid.cols) xx = gridStartX + grid.cols * cardW + (grid.cols - 1) * CELL_GAP + GUIDE_DIST;
+    else xx = gridStartX + c * cardW + (c - 0.5) * CELL_GAP;
     ctx.beginPath();
     ctx.moveTo(xx, 0);
     ctx.lineTo(xx, PAGE_H);
@@ -2279,6 +2415,10 @@ function drawCuttingGuide(grid, cellW, cellH) {
 }
 
 // ---- Downloads ----
+function sanitizeFilename(str) {
+  return (str || 'Your Business Name').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ');
+}
+
 function triggerDownload(href, filename) {
   const a = document.createElement('a');
   a.href = href;
@@ -2294,7 +2434,8 @@ document.getElementById('downloadJpgBtn').addEventListener('click', () => {
     return;
   }
   const dataURL = canvas.toDataURL('image/jpeg', 0.92);
-  triggerDownload(dataURL, 'benefit-qr.jpg');
+  triggerDownload(dataURL, `✦ Arif-${sanitizeFilename(state.accountName)}.jpg`);
+  saveHistoryEntry({ businessName: state.accountName, accountInput: state.accountInput, color: state.color, layout: state.layout });
 });
 
 document.getElementById('downloadPdfBtn').addEventListener('click', () => {
@@ -2304,13 +2445,133 @@ document.getElementById('downloadPdfBtn').addEventListener('click', () => {
   }
   const blob = canvasToPDFBlob(canvas, 0.92);
   const url = URL.createObjectURL(blob);
-  triggerDownload(url, 'benefit-qr.pdf');
+  triggerDownload(url, `✦ Arif-${sanitizeFilename(state.accountName)}.pdf`);
   setTimeout(() => URL.revokeObjectURL(url), 2000);
+  saveHistoryEntry({ businessName: state.accountName, accountInput: state.accountInput, color: state.color, layout: state.layout });
 });
 
 // ---- Initial paint ----
 updateAccountHint();
 renderSheet();
+
+// ============================================================
+// FIREBASE (optional) - QR-generation history
+// ------------------------------------------------------------
+// To enable: create a free project at https://console.firebase.google.com
+//   1. Create project -> Build -> Realtime Database -> Create Database
+//      (start in test mode, or set rules to allow read/write as needed)
+//   2. Project settings (gear icon) -> General -> "Your apps" -> Add app -> Web
+//   3. Copy the config object shown there and paste it below, replacing
+//      the placeholder values.
+// Until configured, the History feature is simply inactive and the rest
+// of the app (QR generation, download) keeps working fully offline.
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCEkZfNx1iMmzmJi7EtXrV2TY_K3N79qHc",
+  authDomain: "benefitqr.firebaseapp.com",
+  databaseURL: "https://benefitqr-default-rtdb.firebaseio.com/",
+  projectId: "benefitqr",
+  storageBucket: "benefitqr.firebasestorage.app",
+  messagingSenderId: "810778686674",
+  appId: "1:810778686674:web:f7ca6f135eff66468e290b"
+};
+
+let fbDb = null;
+let firebaseReady = false;
+try {
+  if (typeof firebase !== 'undefined' && !firebaseConfig.databaseURL.includes('TODO')) {
+    firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+    firebaseReady = true;
+  }
+} catch (e) {
+  console.warn('Firebase not available:', e);
+}
+
+function saveHistoryEntry(entry) {
+  const statusEl = document.getElementById('saveStatus');
+  if (!firebaseReady || !fbDb) {
+    if (statusEl) {
+      statusEl.textContent = 'History not connected (Firebase not configured/reachable)';
+      statusEl.className = 'save-status save-status-error';
+    }
+    return;
+  }
+  if (statusEl) {
+    statusEl.textContent = 'Saving to history...';
+    statusEl.className = 'save-status';
+  }
+  fbDb.ref('qrHistory').push({
+    businessName: entry.businessName,
+    accountInput: entry.accountInput,
+    color: entry.color,
+    layout: entry.layout,
+    timestamp: Date.now()
+  }).then(() => {
+    if (statusEl) {
+      statusEl.textContent = 'Saved to history ✓';
+      statusEl.className = 'save-status save-status-ok';
+    }
+  }).catch(e => {
+    console.warn('Failed to save history:', e);
+    if (statusEl) {
+      statusEl.textContent = 'Save failed: ' + (e && e.message ? e.message : e);
+      statusEl.className = 'save-status save-status-error';
+    }
+  });
+}
+
+function loadHistory(callback) {
+  if (!firebaseReady || !fbDb) { callback(null); return; }
+  fbDb.ref('qrHistory').orderByChild('timestamp').limitToLast(20).once('value')
+    .then(snapshot => {
+      const items = [];
+      snapshot.forEach(child => items.push(Object.assign({ id: child.key }, child.val())));
+      items.reverse();
+      callback(items);
+    })
+    .catch(e => { console.warn('Failed to load history:', e); callback([]); });
+}
+
+function renderHistoryList(items) {
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '';
+  if (items === null) {
+    listEl.innerHTML = '<div class="history-empty">History isn\'t set up yet (needs a free Firebase project - see code comments).</div>';
+    return;
+  }
+  if (items.length === 0) {
+    listEl.innerHTML = '<div class="history-empty">No saved entries yet. Download a QR to save one.</div>';
+    return;
+  }
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'history-item';
+    const when = new Date(item.timestamp || Date.now()).toLocaleString();
+    btn.innerHTML = `<span class="h-name"></span><span class="h-account"></span><span class="h-meta"></span>`;
+    btn.querySelector('.h-name').textContent = item.businessName || 'Untitled';
+    btn.querySelector('.h-account').textContent = item.accountInput || '';
+    btn.querySelector('.h-meta').textContent = when;
+    btn.addEventListener('click', () => {
+      state.accountName = item.businessName || state.accountName;
+      state.accountInput = item.accountInput || state.accountInput;
+      state.color = item.color || state.color;
+      state.layout = item.layout || state.layout;
+      document.getElementById('accountName').value = state.accountName;
+      document.getElementById('accountInput').value = state.accountInput;
+      document.querySelectorAll('.color-swatch').forEach((el, i) => el.classList.toggle('active', COLORS[i].id === state.color));
+      document.querySelectorAll('.layout-btn').forEach((el, i) => el.classList.toggle('active', LAYOUTS[i].id === state.layout));
+      updateAccountHint();
+      renderSheet();
+    });
+    listEl.appendChild(btn);
+  });
+}
+
+document.getElementById('loadHistoryBtn').addEventListener('click', () => {
+  document.getElementById('historyList').innerHTML = '<div class="history-empty">Loading...</div>';
+  loadHistory(renderHistoryList);
+});
   </script>
 </body>
 </html>
