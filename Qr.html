@@ -3,7 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Benefit QR Pro</title>
+<title>BenefitPay QR Generator – Free Payment QR Code Maker for Bahrain Businesses</title>
+<meta name="description" content="Create professional, printable BenefitPay QR codes for your shop or business in seconds. Free, works offline, no signup required. Generate, customize, and download your payment QR code instantly.">
+<meta name="keywords" content="BenefitPay QR code, Bahrain payment QR, QR code generator Bahrain, free QR code maker, IBAN QR code, mobile payment QR, scan to pay Bahrain">
+<meta name="author" content="Arif">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph / social share preview -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BenefitPay QR Generator">
+<meta property="og:title" content="BenefitPay QR Generator – Free Payment QR Code Maker">
+<meta property="og:description" content="Create professional, printable BenefitPay QR codes for your shop or business in seconds. Free, works offline, no signup required.">
+<!-- TODO: replace with your actual hosted URL and OG image once deployed -->
+<meta property="og:url" content="https://yourdomain.com/">
+<meta property="og:image" content="https://yourdomain.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BenefitPay QR Generator – Free Payment QR Code Maker">
+<meta name="twitter:description" content="Create professional, printable BenefitPay QR codes for your shop or business in seconds. Free, works offline, no signup required.">
+<meta name="twitter:image" content="https://yourdomain.com/og-image.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23DC2626'/%3E%3Crect x='22' y='22' width='20' height='20' fill='white'/%3E%3Crect x='58' y='22' width='20' height='20' fill='white'/%3E%3Crect x='22' y='58' width='20' height='20' fill='white'/%3E%3Crect x='58' y='58' width='12' height='12' fill='white'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #f4f5f7;
@@ -236,22 +259,38 @@
   }
   .history-item {
     width: 100%;
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .history-item-main {
+    flex: 1;
     text-align: left;
     padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: #fbfbfc;
-    margin-bottom: 6px;
     cursor: pointer;
     font-family: inherit;
+    min-width: 0;
   }
-  .history-item .h-name {
+  .history-delete-btn {
+    flex-shrink: 0;
+    width: 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff5f5;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  .history-item-main .h-name {
     font-size: 13.5px;
-    font-weight: 700;
+    font-weight: 500;
     color: var(--text);
     display: block;
   }
-  .history-item .h-account {
+  .history-item-main .h-account {
     font-size: 12px;
     font-weight: 600;
     font-family: "SF Mono", "Roboto Mono", Consolas, monospace;
@@ -259,7 +298,7 @@
     display: block;
     margin-top: 2px;
   }
-  .history-item .h-meta {
+  .history-item-main .h-meta {
     font-size: 11px;
     color: var(--muted);
     display: block;
@@ -336,7 +375,7 @@
 
       <div class="field">
         <label for="accountName">Account / Business Name</label>
-        <input type="text" id="accountName" value="Your Business Name" maxlength="40">
+        <input type="text" id="accountName" value="" placeholder="Put your business name here" maxlength="40">
       </div>
 
       <div class="field">
@@ -358,7 +397,6 @@
 
       <button class="btn-reset" id="resetBtn">Reset to Default</button>
 
-      <div class="section-label">History</div>
       <div id="saveStatus" class="save-status"></div>
       <button class="btn-reset" id="loadHistoryBtn">Load Saved History</button>
       <div id="historyList" class="history-list"></div>
@@ -375,6 +413,42 @@
       </div>
     </main>
 
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <h3>Admin Login</h3>
+      <div class="field">
+        <input type="text" id="adminUsernameInput" placeholder="Username" autocomplete="off">
+      </div>
+      <div class="field">
+        <input type="password" id="adminPinInput" placeholder="PIN" autocomplete="off" inputmode="numeric">
+      </div>
+      <div id="adminLoginError" class="save-status-error"></div>
+      <div class="modal-actions">
+        <button class="btn-reset" id="adminLoginCancel">Cancel</button>
+        <button class="btn btn-primary" id="adminLoginSubmit">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel Modal -->
+  <div id="adminPanelModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-box-large">
+      <div class="modal-header">
+        <h3>Admin Panel</h3>
+        <button class="modal-close-btn" id="adminPanelClose">✕</button>
+      </div>
+      <div class="admin-tabs" id="adminTabs">
+        <button class="admin-tab active" data-tab="history">History</button>
+        <button class="admin-tab" data-tab="stats">Stats</button>
+        <button class="admin-tab" data-tab="visitors">Visitors</button>
+        <button class="admin-tab" data-tab="splash">Splash Messages</button>
+        <button class="admin-tab" data-tab="settings">Settings</button>
+      </div>
+      <div class="admin-tab-content" id="adminTabContent"></div>
+    </div>
   </div>
 
 <!-- Firebase (optional, for QR-generation history). Requires internet;
@@ -1892,6 +1966,139 @@ function wrapText(ctx, text, cx, startY, maxWidth, lineHeight) {
   lines.forEach(l => { ctx.fillText(l, cx, yy); yy += lineHeight; });
 }
 
+// ---- Modern animated "wallpaper" splash card for the empty (not-yet-typed) state ----
+function drawSplashCard(ctx, x, y, w, h, message, opacity, waveTime, colorId) {
+  const theme = COLOR_THEMES[colorId] || COLOR_THEMES.red;
+  const minWH = Math.min(w, h);
+  const radius = minWH * 0.065;
+
+  roundedRectPath(ctx, x, y, w, h, radius);
+  ctx.save();
+  ctx.clip();
+
+  // gradient wallpaper background
+  const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+  grad.addColorStop(0, theme.grad1);
+  grad.addColorStop(1, theme.grad2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(x, y, w, h);
+
+  // soft glow blobs for depth
+  const glow1 = ctx.createRadialGradient(x + w * 0.85, y + h * 0.08, 1, x + w * 0.85, y + h * 0.08, w * 0.55);
+  glow1.addColorStop(0, 'rgba(255,255,255,0.16)');
+  glow1.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow1;
+  ctx.fillRect(x, y, w, h);
+  const glow2 = ctx.createRadialGradient(x + w * 0.08, y + h * 0.92, 1, x + w * 0.08, y + h * 0.92, w * 0.5);
+  glow2.addColorStop(0, 'rgba(255,255,255,0.12)');
+  glow2.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow2;
+  ctx.fillRect(x, y, w, h);
+
+  // animated wavy lines drifting slowly
+  const waves = [
+    { amp: h * 0.028, freq: 1.3, yoff: 0.22, speed: 0.18, op: 0.16, lw: 2.4 },
+    { amp: h * 0.020, freq: 1.9, yoff: 0.42, speed: -0.14, op: 0.11, lw: 1.8 },
+    { amp: h * 0.034, freq: 0.9, yoff: 0.66, speed: 0.10, op: 0.13, lw: 2.4 },
+    { amp: h * 0.018, freq: 2.3, yoff: 0.84, speed: -0.22, op: 0.09, lw: 1.6 }
+  ];
+  waves.forEach(wv => {
+    ctx.beginPath();
+    const phase = waveTime * wv.speed * Math.PI * 2;
+    for (let px = 0; px <= w; px += 6) {
+      const yy = y + h * wv.yoff + wv.amp * Math.sin((px / w) * Math.PI * 2 * wv.freq + phase);
+      if (px === 0) ctx.moveTo(x + px, yy); else ctx.lineTo(x + px, yy);
+    }
+    ctx.strokeStyle = `rgba(255,255,255,${wv.op})`;
+    ctx.lineWidth = wv.lw;
+    ctx.stroke();
+  });
+
+  // subtle dot grid
+  const spacing = Math.max(20, minWH * 0.045);
+  ctx.fillStyle = 'rgba(255,255,255,0.10)';
+  for (let yy = y; yy < y + h; yy += spacing) {
+    for (let xx = x; xx < x + w; xx += spacing) {
+      ctx.beginPath();
+      ctx.arc(xx, yy, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+
+  const cx = x + w / 2;
+  const cy = y + h * 0.42;
+
+  // scan icon in a soft translucent badge
+  const badgeR = minWH * 0.09;
+  ctx.beginPath();
+  ctx.arc(cx, cy, badgeR, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  ctx.fill();
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+  ctx.lineWidth = Math.max(2.5, minWH * 0.013);
+  ctx.lineCap = 'round';
+  const iconHalf = badgeR * 0.5;
+  const bracketLen = badgeR * 0.32;
+  function bracket(bx, by, dx, dy) {
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bracketLen * dy);
+    ctx.lineTo(bx, by);
+    ctx.lineTo(bx + bracketLen * dx, by);
+    ctx.stroke();
+  }
+  bracket(cx - iconHalf, cy - iconHalf, 1, 1);
+  bracket(cx + iconHalf, cy - iconHalf, -1, 1);
+  bracket(cx - iconHalf, cy + iconHalf, 1, -1);
+  bracket(cx + iconHalf, cy + iconHalf, -1, -1);
+  ctx.restore();
+
+  // message text with fade opacity + soft shadow, and subtitle
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  const msgSize = Math.max(12, h * 0.026);
+  ctx.font = `800 ${msgSize}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.18)';
+  ctx.shadowBlur = msgSize * 0.2;
+  ctx.shadowOffsetY = msgSize * 0.06;
+  ctx.fillStyle = '#ffffff';
+  wrapTextWeighted(ctx, message, cx, cy + h * 0.155, w - minWH * 0.16, msgSize * 1.32);
+  ctx.restore();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.78)';
+  ctx.font = `${Math.max(9, h * 0.0145)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Enter your IBAN or mobile number below', cx, y + h - minWH * 0.075);
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+}
+
+function wrapTextWeighted(ctx, text, cx, startY, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  const lines = [];
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  const totalH = lines.length * lineHeight;
+  let yy = startY - totalH / 2 + lineHeight / 2;
+  lines.forEach(l => { ctx.fillText(l, cx, yy); yy += lineHeight; });
+}
+
 // ---- Segmented OTP-style character boxes ----
 // groups: array of strings, e.g. ['BH88','FIBH','1900','0866','5110','01']
 function computeSegmentedLayout(groups, targetW, maxBoxH) {
@@ -2073,7 +2280,7 @@ function drawCard(ctx, x, y, w, h, colorId, data, qr) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { drawCard, drawQRCode, drawPlaceholderCard, drawSegmentedNumber, computeSegmentedLayout, fillRoundedRect, strokeRoundedRect, roundedRectPath, COLOR_THEMES };
+  module.exports = { drawCard, drawQRCode, drawPlaceholderCard, drawSplashCard, drawSegmentedNumber, computeSegmentedLayout, fillRoundedRect, strokeRoundedRect, roundedRectPath, COLOR_THEMES };
 }
 
 // Minimal, dependency-free single-page PDF writer that embeds a JPEG.
@@ -2201,7 +2408,7 @@ function formatMobileDisplay(mainDigits) {
 
 function buildPayload(config) {
   const v = validateAccountInput(config.accountInput || '');
-  if (!v.valid) return { ok: false, message: v.message };
+  if (!v.valid) return { ok: false, message: v.message, type: v.type };
 
   // Per spec: the QR JSON payload always uses the "iban" key, even when the
   // input is a mobile number, and always includes an "amount" key (empty if unset).
@@ -2232,12 +2439,64 @@ const PAGE_W = 1240, PAGE_H = 1754; // A4 portrait @ ~150dpi
 const PAGE_MARGIN = 46, CELL_GAP = 24;
 
 const DEFAULTS = {
-  accountName: 'Your Business Name',
+  accountName: '',
   accountInput: '',
   color: COLORS[0].id,
   layout: '1x',
   showCuttingGuide: true
 };
+
+const SPLASH_MESSAGES = [
+  'Generate your BenefitPay QR code the easiest way',
+  'One QR. Instant payments. Zero hassle.',
+  'Print it, stick it, get paid.',
+  'Your business, one scan away.',
+  'Turn any counter into a payment counter.',
+  'No login required',
+  'At Your Service - ✦ Arif'
+];
+let splashIndex = 0;
+let splashAnimRunning = false;
+let splashStartTime = 0;
+let splashMsgStartTime = 0;
+const SPLASH_DISPLAY_MS = 2800;
+const SPLASH_FADE_MS = 450;
+
+function getSplashFrame() {
+  const now = performance.now();
+  const elapsed = now - splashMsgStartTime;
+  const cycle = SPLASH_DISPLAY_MS + SPLASH_FADE_MS;
+  if (elapsed > cycle) {
+    splashIndex = (splashIndex + 1) % SPLASH_MESSAGES.length;
+    splashMsgStartTime = now;
+  }
+  const t = now - splashMsgStartTime;
+  let opacity = 1;
+  if (t < SPLASH_FADE_MS) opacity = t / SPLASH_FADE_MS;
+  else if (t > SPLASH_DISPLAY_MS) opacity = 1 - (t - SPLASH_DISPLAY_MS) / SPLASH_FADE_MS;
+  return {
+    message: SPLASH_MESSAGES[splashIndex],
+    opacity: Math.max(0, Math.min(1, opacity)),
+    waveTime: (now - splashStartTime) / 1000
+  };
+}
+
+function splashAnimLoop() {
+  if (!splashAnimRunning) return;
+  renderSheet();
+  requestAnimationFrame(splashAnimLoop);
+}
+
+function startSplashCycle() {
+  if (splashAnimRunning) return;
+  splashAnimRunning = true;
+  splashStartTime = performance.now();
+  splashMsgStartTime = performance.now();
+  requestAnimationFrame(splashAnimLoop);
+}
+function stopSplashCycle() {
+  splashAnimRunning = false;
+}
 
 let state = Object.assign({}, DEFAULTS);
 
@@ -2357,6 +2616,11 @@ function renderSheet() {
     qr.make();
   }
 
+  if (payload.type === 'empty') startSplashCycle();
+  else stopSplashCycle();
+
+  const splashFrame = payload.type === 'empty' ? getSplashFrame() : null;
+
   for (let r = 0; r < grid.rows; r++) {
     for (let c = 0; c < grid.cols; c++) {
       const cx = gridStartX + c * (cardW + CELL_GAP);
@@ -2366,6 +2630,8 @@ function renderSheet() {
           accountName: state.accountName || 'Your Business Name',
           accountDisplay: payload.display
         }, qr);
+      } else if (payload.type === 'empty') {
+        drawSplashCard(ctx, cx, cy, cardW, cellH, splashFrame.message, splashFrame.opacity, splashFrame.waveTime, state.color);
       } else {
         drawPlaceholderCard(ctx, cx, cy, cardW, cellH, payload.message);
       }
@@ -2523,14 +2789,29 @@ function saveHistoryEntry(entry) {
 
 function loadHistory(callback) {
   if (!firebaseReady || !fbDb) { callback(null); return; }
-  fbDb.ref('qrHistory').orderByChild('timestamp').limitToLast(20).once('value')
+  fbDb.ref('qrHistory').once('value')
     .then(snapshot => {
       const items = [];
       snapshot.forEach(child => items.push(Object.assign({ id: child.key }, child.val())));
-      items.reverse();
-      callback(items);
+      items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      callback(items.slice(0, 30));
     })
     .catch(e => { console.warn('Failed to load history:', e); callback([]); });
+}
+
+const HISTORY_DELETE_PIN = '1010';
+
+function deleteHistoryEntry(id) {
+  const pin = prompt('Enter PIN to delete this entry:');
+  if (pin === null) return;
+  if (pin !== HISTORY_DELETE_PIN) {
+    alert('Incorrect PIN. Entry not deleted.');
+    return;
+  }
+  if (!firebaseReady || !fbDb) return;
+  fbDb.ref('qrHistory/' + id).remove()
+    .then(() => loadHistory(renderHistoryList))
+    .catch(e => alert('Delete failed: ' + (e && e.message ? e.message : e)));
 }
 
 function renderHistoryList(items) {
@@ -2545,8 +2826,11 @@ function renderHistoryList(items) {
     return;
   }
   items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'history-item';
+
     const btn = document.createElement('button');
-    btn.className = 'history-item';
+    btn.className = 'history-item-main';
     const when = new Date(item.timestamp || Date.now()).toLocaleString();
     btn.innerHTML = `<span class="h-name"></span><span class="h-account"></span><span class="h-meta"></span>`;
     btn.querySelector('.h-name').textContent = item.businessName || 'Untitled';
@@ -2564,7 +2848,19 @@ function renderHistoryList(items) {
       updateAccountHint();
       renderSheet();
     });
-    listEl.appendChild(btn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'history-delete-btn';
+    delBtn.title = 'Delete entry';
+    delBtn.textContent = '🗑';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteHistoryEntry(item.id);
+    });
+
+    row.appendChild(btn);
+    row.appendChild(delBtn);
+    listEl.appendChild(row);
   });
 }
 
